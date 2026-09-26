@@ -28,6 +28,8 @@ const ICONS = {
   plug: '<path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8z"/><path d="M12 17v5"/>',
   swap: '<path d="M17 3l4 4-4 4"/><path d="M21 7H9a4 4 0 0 0-4 4v1"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12a4 4 0 0 0 4-4v-1"/>',
   chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/>',
+  code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2z"/>',
 };
 
 const CHECK_ICON =
@@ -87,6 +89,39 @@ function renderStats() {
       <div class="stat reveal reveal-d${(i % 4) + 1}">
         <div class="stat__value" data-count="${s.value}">${s.prefix}0${esc(s.suffix)}</div>
         <div class="stat__label">${esc(s.label)}</div>
+      </div>`
+    )
+    .join('');
+}
+
+function renderExpertise() {
+  $('#expertise-grid').innerHTML = CONFIG.expertise
+    .map(
+      (e, i) => `
+      <article class="exp-card reveal reveal-d${(i % 3) + 1}">
+        <div class="exp-card__head">
+          <div class="exp-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">${ICONS[e.icon] || ICONS.shield}</svg>
+          </div>
+          <h3 class="exp-card__title">${esc(e.title)}</h3>
+        </div>
+        <p class="exp-card__text">${esc(e.text)}</p>
+        <ul class="exp-card__points">
+          ${e.points.map((p) => `<li>${CHECK_ICON}<span>${esc(p)}</span></li>`).join('')}
+        </ul>
+      </article>`
+    )
+    .join('');
+}
+
+function renderProcess() {
+  $('#process-grid').innerHTML = CONFIG.process
+    .map(
+      (p, i) => `
+      <div class="process__step reveal reveal-d${(i % 4) + 1}">
+        <div class="process__num">${esc(p.step)}</div>
+        <h4 class="process__title">${esc(p.title)}</h4>
+        <p class="process__text">${esc(p.text)}</p>
       </div>`
     )
     .join('');
@@ -211,63 +246,33 @@ function renderFaq() {
 const CONTACT_ICONS = {
   telegram:
     '<path d="M21 5 3 11.5l5 2 2 5.5 3.5-4 5 3.5L21 5z"/><path d="m8 13.5 8-6"/>',
-  email: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
-  phone:
-    '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
-  wallet:
-    '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><rect x="16" y="13" width="4" height="4" rx="1"/>',
 };
 
+/**
+ * Контакты намеренно сведены к одному каналу — Telegram.
+ * Email, телефон и кошелёк в этой секции не показываются.
+ */
 function renderContacts() {
-  const { email, phone, telegram, telegramUrl } = CONFIG.company;
-  const { wallet } = CONFIG.payment;
-
-  const rows = [
-    { icon: 'telegram', label: 'Telegram', value: `@${telegram}`, href: telegramUrl },
-    { icon: 'email', label: 'Email', value: email, href: `mailto:${email}` },
-    { icon: 'phone', label: 'Телефон', value: phone, href: `tel:${phone.replace(/[^\d+]/g, '')}` },
-    { icon: 'wallet', label: 'Кошелёк (TON)', value: `${wallet.slice(0, 8)}…${wallet.slice(-6)}`, href: null },
-  ];
-
-  $('#contact-info').innerHTML = rows
-    .map((r) => {
-      const inner = `
-        <div class="contact-row__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24">${CONTACT_ICONS[r.icon]}</svg>
-        </div>
-        <div>
-          <div class="contact-row__label">${esc(r.label)}</div>
-          <div class="contact-row__value">${esc(r.value)}</div>
-        </div>`;
-      return r.href
-        ? `<a class="contact-row" href="${safeUrl(r.href)}" ${
-            r.icon === 'telegram' ? 'target="_blank" rel="noopener"' : ''
-          }>${inner}</a>`
-        : `<div class="contact-row">${inner}</div>`;
-    })
-    .join('');
-
-  // Опции в select формы
-  $('#cf-service').innerHTML =
-    '<option value="other">Другое / не знаю</option>' +
-    CONFIG.services.map((s) => `<option value="${esc(s.id)}">${esc(s.title)}</option>`).join('');
+  const { telegram, telegramUrl } = CONFIG.company;
 
   // Футер
   $('#footer-nav').innerHTML = CONFIG.nav
     .map((i) => `<a href="${safeUrl(i.href)}">${esc(i.label)}</a>`)
     .join('');
 
-  $('#footer-contacts').innerHTML = [
-    `<a href="${safeUrl(telegramUrl)}" target="_blank" rel="noopener">Telegram</a>`,
-    `<a href="${safeUrl(`mailto:${email}`)}">${esc(email)}</a>`,
-    `<a href="${safeUrl(`tel:${phone.replace(/[^\d+]/g, '')}`)}">${esc(phone)}</a>`,
-  ].join('');
+  $('#footer-contacts').innerHTML =
+    `<a href="${safeUrl(telegramUrl)}" target="_blank" rel="noopener">` +
+    `Telegram @${esc(telegram)}</a>`;
 
   $('#footer-legal').textContent =
     `© ${new Date().getFullYear()} ${CONFIG.company.legalName}. ${CONFIG.company.legalAddress}. ` +
     `Сайт не является инвестиционной рекомендацией и публичным предложением криптовалюты.`;
 
   $('#cta-telegram').href = telegramUrl;
+
+  // Запасная ссылка для режима «без JavaScript»
+  const fallback = $('#tg-fallback');
+  if (fallback) fallback.href = telegramUrl;
 
   const socials = [
     { label: 'Telegram', href: telegramUrl, icon: CONTACT_ICONS.telegram },
@@ -474,8 +479,15 @@ async function loadTonRate() {
  *  Анимации: появление секций и счётчики
  * ------------------------------------------------------------------ */
 
+let revealObserver = null;
+
+/**
+ * Наблюдатель появления блоков. Идемпотентен: повторный вызов после
+ * перерисовки секций (например, услуг после загрузки курса) показывает
+ * новые элементы, а не оставляет их с opacity: 0 навсегда.
+ */
 function initReveal() {
-  const items = $$('.reveal');
+  const items = $$('.reveal:not(.reveal--visible)');
   if (!items.length) return;
 
   if (!('IntersectionObserver' in window)) {
@@ -483,19 +495,21 @@ function initReveal() {
     return;
   }
 
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('reveal--visible');
-          io.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-  );
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal--visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+  }
 
-  items.forEach((i) => io.observe(i));
+  items.forEach((i) => revealObserver.observe(i));
 }
 
 function initCounters() {
@@ -675,37 +689,137 @@ function initPayment() {
   });
 }
 
+/** Нормализуем Telegram-ник: @username или username → @username */
+function normalizeTg(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('@')) return raw;
+  if (/^https?:\/\/(t\.me|telegram\.me)\//i.test(raw)) {
+    const name = raw.split('/').filter(Boolean).pop();
+    return name ? `@${name.replace(/^@/, '')}` : '';
+  }
+  if (/^t\.me\//i.test(raw)) {
+    const name = raw.split('/').filter(Boolean).pop();
+    return name ? `@${name.replace(/^@/, '')}` : '';
+  }
+  return `@${raw}`;
+}
+
+/** Копирование в буфер с запасным вариантом для старых браузеров */
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch {
+      ok = false;
+    }
+    document.body.removeChild(ta);
+    return ok;
+  }
+}
+
+/**
+ * Форма заявки.
+ * Собирает текст из трёх полей, копирует его в буфер и открывает Telegram —
+ * пользователю остаётся только нажать «Отправить». Бэкенд не нужен.
+ */
 function initForm() {
   const form = $('#contact-form');
   const success = $('#form-success');
-  if (!form) return;
+  if (!form || !success) return;
 
-  form.addEventListener('submit', (e) => {
-    // Netlify Forms обрабатывает сама, но показываем подтверждение сразу
-    if (!form.checkValidity()) return; // браузер сам подсветит поля
+  const submit = $('#cf-submit');
+  const nameField = $('#cf-name');
+  const tgField = $('#cf-contact');
+  const msgField = $('#cf-message');
+
+  const buildMessage = ({ name, telegram, message }) => {
+    const lines = ['Заявка с сайта TONVISIT', ''];
+    lines.push(`Имя: ${name}`);
+    lines.push(`Telegram: ${telegram}`);
+    lines.push('', 'Задача:', message);
+    return lines.join('\n');
+  };
+
+  const showSuccess = (copied) => {
+    success.innerHTML = copied
+      ? `Готово! Текст заявки скопирован — вставьте его в чат и отправьте.
+         Если чат не открылся, напишите нам: <a href="${safeUrl(
+        CONFIG.company.telegramUrl
+      )}" target="_blank" rel="noopener">Telegram @${esc(CONFIG.company.telegram)}</a>.`
+      : `Откройте Telegram и отправьте заявку в
+         <a href="${safeUrl(CONFIG.company.telegramUrl)}" target="_blank" rel="noopener">@${esc(
+        CONFIG.company.telegram
+      )}</a> — текст заявки подготовлен.`;
+    success.classList.add('form__success--visible');
+    setTimeout(() => success.classList.remove('form__success--visible'), 15000);
+  };
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const data = new FormData(form);
-    // honeypot: ботов не мучаем, просто «успешно» закрываем
-    if (data.get('bot-field')) {
+    // Honeypot: ботов не мучаем, просто закрываем
+    if (form.elements['bot-field'] && form.elements['bot-field'].value) {
       form.reset();
       return;
     }
 
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(data).toString(),
-    })
-      .catch(() => {
-        /* даже если сеть моргнула — показываем успех пользователю */
-      })
-      .finally(() => {
-        success.classList.add('form__success--visible');
-        form.reset();
-        setTimeout(() => success.classList.remove('form__success--visible'), 8000);
-      });
+    // Ручная валидация: novalidate отключил браузерные подсказки,
+    // поэтому подсвечиваем сами — так работает одинаково везде.
+    const required = Array.from(form.querySelectorAll('[required]'));
+    const invalid = required.filter((el) => {
+      const empty = !el.value.trim();
+      el.closest('.field')?.classList.toggle('field--error', empty);
+      return empty;
+    });
+    if (invalid.length) {
+      invalid[0].focus();
+      return;
+    }
+
+    const text = buildMessage({
+      name: nameField.value.trim(),
+      telegram: normalizeTg(tgField.value),
+      message: msgField.value.trim(),
+    });
+
+    if (submit) {
+      submit.disabled = true;
+      submit.innerHTML = '<span class="spinner" aria-hidden="true"></span> Открываем Telegram…';
+    }
+
+    // Открываем чат сразу — это же действие пользователя, попапы не блокируются.
+    const win = window.open(CONFIG.company.telegramUrl, '_blank', 'noopener');
+    const copied = await copyToClipboard(text);
+
+    if (submit) {
+      submit.disabled = false;
+      submit.innerHTML =
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+        '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.94 6.7-1.7 8.02c-.12.55-.45.68-.91.42l-2.52-1.86-1.22 1.17c-.13.13-.24.24-.5.24l.18-2.54 4.72-4.26c.2-.18-.05-.28-.32-.11L6.98 13.2l-2.44-.76c-.53-.16-.54-.53.11-.79l9.55-3.68c.42-.15.79.1.65.95z" /></svg>' +
+        'Отправить в Telegram';
+    }
+
+    showSuccess(copied);
+    form.reset();
   });
+
+  // Убираем подсветку ошибки, как только пользователь начал исправлять
+  form.addEventListener(
+    'input',
+    (e) => e.target.closest('.field')?.classList.remove('field--error')
+  );
 }
 
 /* ------------------------------------------------------------------
@@ -715,6 +829,8 @@ function initForm() {
 function renderAll() {
   renderNav();
   renderStats();
+  renderExpertise();
+  renderProcess();
   renderServices();
   renderCases();
   renderTeam();
@@ -736,6 +852,8 @@ async function init() {
   // 2. Затем подтягиваем актуальный курс и баланс и перерисовываем цены
   await loadTonRate();
   renderServices();
+  // Карточки услуг пересозданы — их нужно снова показать (иначе opacity: 0)
+  initReveal();
   loadWalletBalance();
 }
 

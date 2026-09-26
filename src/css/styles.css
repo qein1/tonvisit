@@ -1192,49 +1192,75 @@ ol {
   }
 }
 
-/* ---------- 12. Контакты и форма ---------- */
-.contact {
+/* ---------- 11a. Компетенции («Что мы делаем») ---------- */
+.expertise {
   display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: 40px;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
 }
 
-.contact__info {
-  display: grid;
-  gap: 16px;
-}
-
-.contact-row {
+.exp-card {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
+  flex-direction: column;
+  padding: 30px 28px;
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
-  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  transition: transform 0.3s var(--ease), border-color 0.3s var(--ease),
+    box-shadow 0.3s var(--ease), background 0.3s var(--ease);
 }
 
-.contact-row:hover {
-  border-color: var(--border-strong);
-  transform: translateX(4px);
+/* Мягкое свечение в углу карточки при наведении */
+.exp-card::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 152, 234, 0.18), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+  pointer-events: none;
 }
 
-.contact-row__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+.exp-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 152, 234, 0.45);
+  background: var(--surface-2);
+  box-shadow: var(--shadow);
+}
+
+.exp-card:hover::after {
+  opacity: 1;
+}
+
+.exp-card__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.exp-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, rgba(0, 152, 234, 0.18), rgba(124, 92, 255, 0.12));
-  border: 1px solid rgba(0, 152, 234, 0.25);
   flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(0, 152, 234, 0.2), rgba(124, 92, 255, 0.14));
+  border: 1px solid rgba(0, 152, 234, 0.28);
 }
 
-.contact-row__icon svg {
-  width: 20px;
-  height: 20px;
+.exp-card__icon svg {
+  width: 23px;
+  height: 23px;
   stroke: var(--brand-light);
   fill: none;
   stroke-width: 1.8;
@@ -1242,29 +1268,138 @@ ol {
   stroke-linejoin: round;
 }
 
-.contact-row__label {
-  font-size: 12.5px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  margin-bottom: 2px;
+.exp-card__title {
+  font-size: 19.5px;
+  line-height: 1.25;
 }
 
-.contact-row__value {
-  font-size: 15.5px;
-  font-weight: 600;
-  color: var(--text);
-  word-break: break-word;
+.exp-card__text {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.exp-card__points {
+  display: grid;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.exp-card__points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.exp-card__points svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  stroke: var(--brand-light);
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Блок «Как устроена работа» */
+.process {
+  margin-top: 56px;
+  padding: 40px 36px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(150deg, rgba(0, 152, 234, 0.08), rgba(124, 92, 255, 0.05));
+  border: 1px solid var(--border);
+}
+
+.process__head {
+  max-width: 620px;
+  margin: 0 auto 34px;
+  text-align: center;
+}
+
+.process__head h3 {
+  font-size: clamp(22px, 2.6vw, 28px);
+  margin-bottom: 10px;
+}
+
+.process__head p {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.process__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+  counter-reset: step;
+}
+
+.process__step {
+  position: relative;
+  padding: 26px 22px;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  transition: transform 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.process__step:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 152, 234, 0.4);
+}
+
+.process__num {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 8px 20px -8px rgba(0, 152, 234, 0.8);
+}
+
+.process__title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.process__text {
+  color: var(--text-muted);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+/* ---------- 12. Заявка и форма ---------- */
+.contact--solo {
+  display: block;
+  max-width: 640px;
+  margin-inline: auto;
 }
 
 .form {
   display: grid;
   gap: 16px;
-  padding: 30px;
-  border-radius: var(--radius);
+  padding: 32px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .form__row {
@@ -1319,6 +1454,13 @@ ol {
 .field input:user-invalid,
 .field textarea:user-invalid {
   border-color: var(--danger);
+}
+
+/* Ошибка, подсвеченная нашей валидацией (форма работает с novalidate) */
+.field--error input,
+.field--error textarea {
+  border-color: var(--danger);
+  background: rgba(255, 92, 92, 0.06);
 }
 
 .field select {
@@ -1964,10 +2106,6 @@ ol {
     justify-content: center;
   }
 
-  .contact {
-    grid-template-columns: 1fr;
-  }
-
   .footer__top {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
@@ -2047,6 +2185,28 @@ ol {
 
   .card__tagline {
     min-height: 0;
+  }
+
+  .expertise {
+    grid-template-columns: 1fr;
+  }
+
+  .exp-card {
+    padding: 26px 22px;
+  }
+
+  .process {
+    padding: 30px 20px;
+    margin-top: 40px;
+  }
+
+  .process__grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .process__step {
+    padding: 22px 20px;
   }
 
   .form {

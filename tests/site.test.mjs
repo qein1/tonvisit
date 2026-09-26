@@ -78,8 +78,53 @@ ok($$('#cases-list .case').length === cfgMod.CONFIG.cases.length, 'Кейсы о
 ok($$('#team-grid .member').length === cfgMod.CONFIG.team.length, 'Команда отрисована');
 ok($$('#reviews-grid .review').length === cfgMod.CONFIG.reviews.length, 'Отзывы отрисованы');
 ok($$('#faq-list .faq__item').length === cfgMod.CONFIG.faq.length, 'FAQ отрисован');
-ok($$('#contact-info .contact-row').length === 4, 'Контакты отрисованы (4 строки)');
-ok($$('#cf-service option').length === cfgMod.CONFIG.services.length + 1, 'Опции формы заполнены');
+ok(
+  $$('#expertise-grid .exp-card').length === cfgMod.CONFIG.expertise.length,
+  'Карточки компетенций отрисованы'
+);
+ok(
+  $$('#process-grid .process__step').length === cfgMod.CONFIG.process.length,
+  'Этапы работы отрисованы'
+);
+ok($('#contact-info') === null, 'Блок контактов (tg/email/телефон/кошелёк) удалён');
+ok($('#cf-service') === null, 'Select «Что интересует» удалён из формы');
+
+console.log('\n[1b] Секция «Что мы делаем» (без цен)');
+const expertiseText = $('#expertise-grid').textContent;
+ok(
+  $$('#expertise-grid .exp-card h3').length === cfgMod.CONFIG.expertise.length &&
+    expertiseText.length > 200,
+  'Компетенции содержат описания'
+);
+ok(
+  // Ни блока цены, ни кнопки оплаты, ни суммы с валютой внутри одного пункта
+  $$('#expertise-grid .exp-card').every(
+    (c) =>
+      !c.querySelector('.price') &&
+      !c.querySelector('[data-pay]') &&
+      Array.from(c.querySelectorAll('.exp-card__title, .exp-card__text, .exp-card__points li')).every(
+        (el) => !/(?:^|\s)\d+(?:[.,]\d+)?\s*(?:TON|USDT|USD)\b|\$\s*\d/i.test(el.textContent)
+      )
+  ),
+  'В блоке компетенций нет цен и кнопок оплаты'
+);
+ok(
+  $$('#expertise-grid .exp-card__icon svg').length === cfgMod.CONFIG.expertise.length,
+  'У каждой компетенции своя иконка'
+);
+ok(
+  $$('#process-grid .process__step .process__num').length === cfgMod.CONFIG.process.length &&
+    $('#process-grid .process__step .process__num').textContent === cfgMod.CONFIG.process[0].step,
+  'Этапы пронумерованы'
+);
+ok(
+  cfgMod.CONFIG.expertise.every((e) => e.points && e.points.length >= 1),
+  'У каждой компетенции есть конкретика в пунктах'
+);
+ok(
+  cfgMod.CONFIG.nav.some((n) => n.href === '#expertise') && !!$('#expertise'),
+  'Секция «Что мы делаем» доступна из навигации'
+);
 
 console.log('\n[2] Данные в карточках');
 const firstCard = $('#services-grid .card');
@@ -176,16 +221,16 @@ ok($('#burger').getAttribute('aria-expanded') === 'true', 'aria-expanded обн�
 ok($('#faq-list .faq__item').tagName === 'DETAILS', 'FAQ на <details> (работает без JS)');
 // XSS-проверка: данные из конфига не должны исполняться
 const xssPayload = '"><img src=x onerror="window.__xss=1">';
-cfgMod.CONFIG.company.email = xssPayload;
+cfgMod.CONFIG.company.telegram = xssPayload;
 cfgMod.CONFIG.company.telegramUrl = 'javascript:window.__xss2=1';
 window.eval('renderContacts()');
 await wait(30);
-ok(window.__xss === undefined, 'Инъекция в email не исполняется');
+ok(window.__xss === undefined, 'Инъекция в ник не исполняется');
 ok(window.__xss2 === undefined, 'Ссылка javascript: блокируется (safeUrl)');
 ok($('#footer-contacts').querySelectorAll('img').length === 0, 'HTML из конфига не превращается в элементы');
 ok($('#footer-contacts').textContent.includes('<img'), 'Полезный текст сохранён как текст');
 const footerLinks = $$('#footer-contacts a');
-ok(footerLinks.length === 3, 'В футере ровно 3 ссылки (структура не сломана)');
+ok(footerLinks.length === 1, 'В футере одна ссылка — только Telegram');
 ok(
   Array.from(footerLinks).every((a) => a.attributes.length === (a.getAttribute('target') ? 3 : 1)),
   'В ссылки не попали лишние атрибуты (нет внедрения через href)'
@@ -194,9 +239,55 @@ ok(
   Array.from($('#footer-contacts').querySelectorAll('*')).every((el) => !el.hasAttribute('onerror')),
   'Ни у одного элемента нет обработчика onerror'
 );
-cfgMod.CONFIG.company.email = 'hello@tonvisit.io';
-cfgMod.CONFIG.company.telegramUrl = 'https://t.me/tonvisit_support';
+cfgMod.CONFIG.company.telegram = 'qeinq';
+cfgMod.CONFIG.company.telegramUrl = 'https://t.me/qeinq';
 window.eval('renderContacts()');
+ok($('#footer-contacts').textContent.includes('@qeinq'), 'В футере указан Telegram @qeinq');
+ok(!/mailto:|tel:/i.test($('footer').innerHTML), 'В футере нет email и телефона');
+
+console.log('\n[11] Заявка уходит в Telegram');
+const tgCfg = cfgMod.CONFIG.company;
+let openedUrl = null;
+window.open = (url) => { openedUrl = String(url); return {}; };
+let formText = null;
+window.navigator.clipboard = { writeText: async (t) => { formText = t; } };
+
+// Пустая форма — отправка блокируется, поля подсвечиваются
+$('#contact-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+await wait(30);
+ok(openedUrl === null, 'Пустая форма не отправляется');
+ok($('#cf-name').closest('.field').classList.contains('field--error'), 'Пустое поле подсвечено');
+
+// Нормализация ника: без @ и со ссылкой
+window.eval('normalizeTg("qeinq")');
+ok(window.normalizeTg('qeinq') === '@qeinq', 'Ник без @ нормализуется');
+ok(window.normalizeTg('t.me/qeinq') === '@qeinq', 'Ссылка t.me нормализуется');
+ok(window.normalizeTg('https://t.me/qeinq') === '@qeinq', 'Полная ссылка нормализуется');
+ok(window.normalizeTg('@qeinq') === '@qeinq', 'Ник с @ не меняется');
+
+$('#cf-name').value = 'Алексей';
+$('#cf-contact').value = 'qeinq';
+$('#cf-message').value = 'Нужен аудит смарт-контракта';
+$('#contact-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+await wait(60);
+ok(openedUrl === tgCfg.telegramUrl, `Открыт Telegram ${tgCfg.telegramUrl} (${openedUrl})`);
+ok(!!formText && formText.includes('Алексей'), 'В заявку попало имя');
+ok(!!formText && formText.includes('@qeinq'), 'Ник нормализован в тексте заявки');
+ok(!!formText && formText.includes('аудит смарт-контракта'), 'Текст задачи в заявке');
+ok($('#form-success').classList.contains('form__success--visible'), 'Показано подтверждение');
+ok($('#cf-name').value === '' && $('#cf-message').value === '', 'Форма очищена после отправки');
+ok($('#cf-submit').disabled === false && $('#cf-submit').textContent.includes('Отправить в Telegram'), 'Кнопка вернулась в исходное состояние');
+
+// Honeypot: бот не проходит
+openedUrl = null;
+$('#cf-name').value = 'Бот';
+$('#cf-contact').value = 'bot';
+$('#cf-message').value = 'Спам';
+$('#contact-form').elements['bot-field'].value = 'spam';
+$('#contact-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+await wait(30);
+ok(openedUrl === null, 'Honeypot блокирует ботов');
+$('#contact-form').elements['bot-field'].value = '';
 
 console.log('\n' + '='.repeat(46));
 console.log(`  Пройдено: ${pass}   Провалено: ${fail}`);

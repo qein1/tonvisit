@@ -43,10 +43,9 @@
         "@type": "ProfessionalService",
         "name": "TONVISIT",
         "description": "Крипто-компания: аудит смарт-контрактов, платёжная интеграция, OTC и консалтинг в сети TON.",
-        "email": "hello@tonvisit.io",
         "areaServed": "Worldwide",
         "priceRange": "$$$",
-        "sameAs": ["https://t.me/tonvisit_support"]
+        "sameAs": ["https://t.me/qeinq"]
       }
     </script>
   </head>
@@ -155,12 +154,42 @@
       </section>
 
 
-      <!-- ============ УСЛУГИ ============ -->
-      <section class="section" id="services">
+      <!-- ============ ЧТО МЫ ДЕЛАЕМ (компетенции, без цен) ============ -->
+      <section class="section" id="expertise">
+        <div class="container">
+          <div class="section-head section-head--center reveal">
+            <span class="eyebrow">Компетенции</span>
+            <h2>Что мы делаем</h2>
+            <p class="lead">
+              Шесть направлений, в которых мы действительно сильны. Здесь — про то, как
+              мы работаем и за что отвечаем. Стоимость зависит от объёма: считаем её
+              после короткого разбора задачи.
+            </p>
+          </div>
+
+          <div class="expertise" id="expertise-grid"></div>
+
+          <!-- Как устроена работа -->
+          <div class="process reveal">
+            <div class="process__head">
+              <h3>Как устроена работа</h3>
+              <p>
+                Прозрачный процесс без чёрных ящиков: вы понимаете, что происходит
+                с проектом на каждом этапе и что происходит дальше.
+              </p>
+            </div>
+            <div class="process__grid" id="process-grid"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ============ УСЛУГИ И ЦЕНЫ ============ -->
+      <section class="section section--alt" id="services">
         <div class="container">
           <div class="section-head section-head--center reveal">
             <span class="eyebrow">Услуги и цены</span>
-            <h2>Что мы делаем</h2>
+            <h2>Что можно заказать</h2>
             <p class="lead">
               Каждая услуга имеет фиксированную цену в TON. Оплата прямо на странице —
               без счетов, договоров и ожидания банковского перевода.
@@ -187,7 +216,7 @@
       </section>
 
       <!-- ============ КЕЙСЫ ============ -->
-      <section class="section section--alt" id="cases">
+      <section class="section" id="cases">
         <div class="container">
           <div class="section-head reveal">
             <span class="eyebrow">Кейсы</span>
@@ -202,7 +231,7 @@
       </section>
 
       <!-- ============ КОМАНДА ============ -->
-      <section class="section" id="team">
+      <section class="section section--alt" id="team">
         <div class="container">
           <div class="section-head section-head--center reveal">
             <span class="eyebrow">Команда</span>
@@ -218,7 +247,7 @@
 
 
       <!-- ============ ОТЗЫВЫ ============ -->
-      <section class="section section--alt" id="reviews">
+      <section class="section" id="reviews">
         <div class="container">
           <div class="section-head section-head--center reveal">
             <span class="eyebrow">Отзывы</span>
@@ -233,7 +262,7 @@
       </section>
 
       <!-- ============ FAQ ============ -->
-      <section class="section" id="faq">
+      <section class="section section--alt" id="faq">
         <div class="container">
           <div class="section-head section-head--center reveal">
             <span class="eyebrow">Вопросы</span>
@@ -246,31 +275,22 @@
         </div>
       </section>
 
-      <!-- ============ КОНТАКТЫ И ФОРМА ============ -->
-      <section class="section section--alt" id="contact">
+      <!-- ============ ЗАЯВКА: УХОДИТ В TELEGRAM ============ -->
+      <section class="section" id="contact">
         <div class="container">
-          <div class="section-head reveal">
-            <span class="eyebrow">Контакты</span>
-            <h2>Обсудим ваш проект</h2>
+          <div class="section-head section-head--center reveal">
+            <span class="eyebrow">Заявка</span>
+            <h2>Расскажите о задаче</h2>
             <p class="lead">
-              Опишите задачу — вернёмся с оценкой сроков и стоимости. Обычно отвечаем
-              в течение рабочего дня.
+              Заполните три поля — мы соберём сообщение и откроем Telegram, чтобы вы
+              отправили его одним нажатием. Отвечаем обычно в течение рабочего дня.
             </p>
           </div>
 
-          <div class="contact">
-            <div class="contact__info" id="contact-info"></div>
-
-            <!-- Netlify Forms: работает без бэкенда, письма приходят на почту из настроек сайта -->
-            <form
-              class="form"
-              id="contact-form"
-              name="contact"
-              method="POST"
-              data-netlify="true"
-              netlify-honeypot="bot-field"
-              action="/thanks.html"
-            >
+          <div class="contact contact--solo">
+            <!-- Форма работает на JS: собирает текст заявки, копирует в буфер
+                 и открывает Telegram. Без JS остаётся запасная ссылка ниже. -->
+            <form class="form" id="contact-form" novalidate>
               <!-- Honeypot: скрытое поле против ботов -->
               <p style="display: none">
                 <label>
@@ -291,21 +311,16 @@
                   />
                 </div>
                 <div class="field">
-                  <label for="cf-contact">Telegram или email</label>
+                  <label for="cf-contact">Telegram</label>
                   <input
                     type="text"
                     id="cf-contact"
-                    name="contact"
-                    placeholder="@username или a@b.com"
+                    name="telegram"
+                    placeholder="@username"
                     required
-                    autocomplete="email"
+                    autocomplete="off"
                   />
                 </div>
-              </div>
-
-              <div class="field">
-                <label for="cf-service">Что интересует</label>
-                <select id="cf-service" name="service"></select>
               </div>
 
               <div class="field">
@@ -318,36 +333,45 @@
                 ></textarea>
               </div>
 
-              <button type="submit" class="btn btn--primary btn--block btn--lg">
-                Отправить заявку
+              <button type="submit" class="btn btn--tg btn--block btn--lg" id="cf-submit">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.94 6.7-1.7 8.02c-.12.55-.45.68-.91.42l-2.52-1.86-1.22 1.17c-.13.13-.24.24-.5.24l.18-2.54 4.72-4.26c.2-.18-.05-.28-.32-.11L6.98 13.2l-2.44-.76c-.53-.16-.54-.53.11-.79l9.55-3.68c.42-.15.79.1.65.95z" />
+                </svg>
+                Отправить в Telegram
               </button>
 
               <p class="form__note">
                 Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.
+                Текст заявки копируется в буфер — останется вставить и отправить.
               </p>
 
-              <div class="form__success" id="form-success">
-                Спасибо! Заявка отправлена — ответим в течение рабочего дня.
-              </div>
+              <div class="form__success" id="form-success" role="status" aria-live="polite"></div>
             </form>
           </div>
+
+          <!-- Запасной вариант: без JavaScript -->
+          <noscript>
+            <p class="form__note" style="margin-top: 24px">
+              Без JavaScript форма не работает — напишите нам напрямую:
+              <a id="tg-fallback" href="https://t.me/qeinq" target="_blank" rel="noopener">@qeinq в Telegram</a>
+            </p>
+          </noscript>
         </div>
       </section>
 
 
-      <!-- ============ CTA: ОПЛАТА В TON ============ -->
+      <!-- ============ CTA: ТОЛЬКО TELEGRAM ============ -->
       <section class="section">
         <div class="container">
           <div class="pay-cta reveal">
             <h2 class="pay-cta__title">Готовы начать?</h2>
             <p class="pay-cta__text">
-              Выберите услугу выше и оплатите криптой прямо на сайте. И напишите нам,
-              если нужен индивидуальный расчёт.
+              Напишите нам в Telegram — обсудим задачу, пришлём оценку сроков и
+              стоимости. Обычно отвечаем в течение рабочего дня.
             </p>
             <div class="pay-cta__actions">
-              <a href="#services" class="btn btn--primary btn--lg">Выбрать услугу</a>
               <a
-                href="https://t.me/tonvisit_support"
+                href="https://t.me/qeinq"
                 class="btn btn--tg btn--lg"
                 id="cta-telegram"
                 target="_blank"
@@ -362,15 +386,15 @@
             <div class="pay-cta__features">
               <span>
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                Без комиссии с нашей стороны
+                Ответ в течение рабочего дня
               </span>
               <span>
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                TON и USDT
+                Оценка сроков и стоимости
               </span>
               <span>
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                Закрывающие документы по запросу
+                Оплата криптой, если удобно
               </span>
             </div>
           </div>

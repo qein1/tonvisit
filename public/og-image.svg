@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06080f"/>
+      <stop offset="100%" stop-color="#0d1524"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#45b6ff"/>
+      <stop offset="100%" stop-color="#7c5cff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#0098ea" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#0098ea" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="980" cy="150" r="380" fill="url(#glow)"/>
+  <circle cx="180" cy="540" r="300" fill="url(#glow)" opacity="0.6"/>
+
+  <g transform="translate(80,80)">
+    <rect width="64" height="64" rx="16" fill="url(#brand)"/>
+    <path fill="#fff" transform="translate(0,-1) scale(0.95)"
+          d="M24 13 10 37.5h10.5L28.5 32l4.4 5.5h13.4L32 13zm11 0L10 52h10.5L45.5 32l-4.4-5.5L36.7 32l-1.7 5.5z"/>
+    <text x="84" y="44" font-family="Helvetica, Arial, sans-serif" font-size="34"
+          font-weight="700" fill="#eef2f8" letter-spacing="-0.5">TONVISIT</text>
+  </g>
+
+  <text x="80" y="290" font-family="Helvetica, Arial, sans-serif" font-size="68"
+        font-weight="700" fill="#eef2f8" letter-spacing="-2">
+    <tspan x="80" dy="0">Крипто-инфраструктура</tspan>
+    <tspan x="80" dy="80">для </tspan><tspan fill="url(#brand)">бизнеса</tspan>
+  </text>
+
+  <text x="80" y="430" font-family="Helvetica, Arial, sans-serif" font-size="29"
+        fill="#9aa7bd">
+    Аудит контрактов · Платёжная интеграция · OTC
+  </text>
+
+  <g transform="translate(80,490)">
+    <rect width="392" height="66" rx="14" fill="#0098ea"/>
+    <text x="196" y="43" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+          font-size="27" font-weight="700" fill="#fff">Оплата в TON</text>
+    <text x="420" y="43" font-family="Helvetica, Arial, sans-serif" font-size="25"
+          fill="#9aa7bd">за 60 секунд</text>
+  </g>
+</svg>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>TONVISIT — крипто-компания: аудит контрактов, платёжная интеграция, OTC</title>
+    <meta
+      name="description"
+      content="TONVISIT — крипто-компания полного цикла: разработка и аудит смарт-контрактов в сети TON, платёжная интеграция, OTC-сопровождение и консалтинг. Оплата в крипте за 60 секунд."
+    />
+    <meta name="theme-color" content="#06080f" />
+    <meta name="author" content="TONVISIT" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TONVISIT" />
+    <meta property="og:title" content="TONVISIT — крипто-инфраструктура для бизнеса" />
+    <meta
+      property="og:description"
+      content="Аудит смарт-контрактов, платёжная интеграция и OTC в сети TON. Оплата криптой за 60 секунд."
+    />
+    <meta property="og:image" content="/public/og-image.svg" />
+    <meta property="og:locale" content="ru_RU" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TONVISIT — крипто-инфраструктура для бизнеса" />
+    <meta
+      name="twitter:description"
+      content="Аудит смарт-контрактов, платёжная интеграция и OTC в сети TON."
+    />
+    <meta name="twitter:image" content="/public/og-image.svg" />
+
+    <link rel="icon" type="image/svg+xml" href="/public/favicon.svg" />
+    <link rel="apple-touch-icon" href="/public/favicon.svg" />
+    <link rel="stylesheet" href="/src/css/styles.css" />
+
+    <!-- Структурированные данные для Google -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "name": "TONVISIT",
+        "description": "Крипто-компания: аудит смарт-контрактов, платёжная интеграция, OTC и консалтинг в сети TON.",
+        "email": "hello@tonvisit.io",
+        "areaServed": "Worldwide",
+        "priceRange": "$$$",
+        "sameAs": ["https://t.me/tonvisit_support"]
+      }
+    </script>
+  </head>
+
+  <body>
+    <!-- ============ ХЕДЕР ============ -->
+    <header class="header" id="header">
+      <div class="container header__inner">
+        <a href="#top" class="logo" aria-label="TONVISIT — на главную">
+          <span class="logo__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M9.28 3.5 3 13.1h4.5l1.9-3.1 1.9 3.1H16l-6.72-9.6zm4.44 0L3 19.5h4.5l6.72-9.6-1.9-3.1-1.9 3.1H13.5l.22-3.1z"
+              />
+            </svg>
+          </span>
+          <span>TONVISIT</span>
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Основная навигация"></nav>
+
+        <div class="header__actions">
+          <a href="#contact" class="btn btn--primary btn--sm">Обсудить проект</a>
+          <button
+            class="burger"
+            id="burger"
+            aria-label="Открыть меню"
+            aria-expanded="false"
+            aria-controls="mobile-menu"
+          >
+            <span class="burger__box" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Мобильное меню -->
+    <div class="mobile-menu" id="mobile-menu"></div>
+
+    <main id="top">
+      <!-- ============ HERO ============ -->
+      <section class="hero">
+        <div class="hero__coins" id="coins" aria-hidden="true"></div>
+        <div class="container hero__grid">
+          <div class="hero__content">
+            <span class="eyebrow">Крипто-компания в сети TON</span>
+            <h1 class="hero__title">
+              Разрабатываем и защищаем <span class="text-gradient">крипто-продукты</span>
+            </h1>
+            <p class="hero__text">
+              Аудит смарт-контрактов, платёжная интеграция и ликвидность. Работаем
+              предсказуемо: фиксируем сроки, цену и результат. Оплата — криптой,
+              за 60 секунд.
+            </p>
+            <div class="hero__actions">
+              <a href="#services" class="btn btn--primary btn--lg">Смотреть услуги и цены</a>
+              <a href="#contact" class="btn btn--ghost btn--lg">Получить консультацию</a>
+            </div>
+            <div class="hero__trust">
+              <span class="hero__trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                140+ проектов
+              </span>
+              <span class="hero__trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                Аудит от 4.5 TON
+              </span>
+              <span class="hero__trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                Ответ в Telegram за 15 минут
+              </span>
+            </div>
+          </div>
+
+          <!-- Карточка кошелька: показывает, что компания реально работает в сети -->
+          <aside class="wallet-card" aria-label="Кошелёк компании в сети TON">
+            <div class="wallet-card__label">Наш кошелёк · TON</div>
+            <div class="wallet-card__balance" id="wallet-balance">— TON</div>
+            <div class="wallet-card__usd" id="wallet-usd">загрузка баланса…</div>
+            <div class="wallet-card__rows">
+              <div class="wallet-card__row">
+                <span>Сеть</span>
+                <span><i class="pulse-dot"></i> TON Mainnet</span>
+              </div>
+              <div class="wallet-card__row">
+                <span>Приём оплаты</span>
+                <span><i class="pulse-dot"></i> Активен</span>
+              </div>
+              <div class="wallet-card__row">
+                <span>Подтверждение</span>
+                <span>~30 сек</span>
+              </div>
+            </div>
+            <a href="#services" class="btn btn--primary btn--block">Оплатить в TON</a>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============ СТАТИСТИКА ============ -->
+      <section class="section section--alt">
+        <div class="container">
+          <div class="stats" id="stats"></div>
+        </div>
+      </section>
+
+
+      <!-- ============ УСЛУГИ ============ -->
+      <section class="section" id="services">
+        <div class="container">
+          <div class="section-head section-head--center reveal">
+            <span class="eyebrow">Услуги и цены</span>
+            <h2>Что мы делаем</h2>
+            <p class="lead">
+              Каждая услуга имеет фиксированную цену в TON. Оплата прямо на странице —
+              без счетов, договоров и ожидания банковского перевода.
+            </p>
+          </div>
+
+          <div class="cards" id="services-grid"></div>
+
+          <p class="pay-cta__features" style="margin-top: 28px">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Оплата в любом TON-кошельке
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Автоподтверждение заказа
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Возврат, если не начали работу
+            </span>
+          </p>
+        </div>
+      </section>
+
+      <!-- ============ КЕЙСЫ ============ -->
+      <section class="section section--alt" id="cases">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">Кейсы</span>
+            <h2>Результаты, а не обещания</h2>
+            <p class="lead">
+              Показываем, что именно изменилось после работы с нами. Детали и цифры —
+              по запросу, включая контакты клиентов.
+            </p>
+          </div>
+          <div class="cases" id="cases-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ КОМАНДА ============ -->
+      <section class="section" id="team">
+        <div class="container">
+          <div class="section-head section-head--center reveal">
+            <span class="eyebrow">Команда</span>
+            <h2>Люди, которые делают работу</h2>
+            <p class="lead">
+              Небольшая команда специалистов. Каждый проект ведёт конкретный человек,
+              а не «команда в целом».
+            </p>
+          </div>
+          <div class="team" id="team-grid"></div>
+        </div>
+      </section>
+
+
+      <!-- ============ ОТЗЫВЫ ============ -->
+      <section class="section section--alt" id="reviews">
+        <div class="container">
+          <div class="section-head section-head--center reveal">
+            <span class="eyebrow">Отзывы</span>
+            <h2>Что говорят клиенты</h2>
+            <p class="lead">
+              Работаем с командами, которым важна предсказуемость: сроки, бюджет и
+              отсутствие «сюрпризов» в процессе.
+            </p>
+          </div>
+          <div class="reviews" id="reviews-grid"></div>
+        </div>
+      </section>
+
+      <!-- ============ FAQ ============ -->
+      <section class="section" id="faq">
+        <div class="container">
+          <div class="section-head section-head--center reveal">
+            <span class="eyebrow">Вопросы</span>
+            <h2>Частые вопросы</h2>
+            <p class="lead">
+              Не нашли ответ — напишите в Telegram, отвечаем быстро.
+            </p>
+          </div>
+          <div class="faq" id="faq-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ КОНТАКТЫ И ФОРМА ============ -->
+      <section class="section section--alt" id="contact">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">Контакты</span>
+            <h2>Обсудим ваш проект</h2>
+            <p class="lead">
+              Опишите задачу — вернёмся с оценкой сроков и стоимости. Обычно отвечаем
+              в течение рабочего дня.
+            </p>
+          </div>
+
+          <div class="contact">
+            <div class="contact__info" id="contact-info"></div>
+
+            <!-- Netlify Forms: работает без бэкенда, письма приходят на почту из настроек сайта -->
+            <form
+              class="form"
+              id="contact-form"
+              name="contact"
+              method="POST"
+              data-netlify="true"
+              netlify-honeypot="bot-field"
+              action="/thanks.html"
+            >
+              <!-- Honeypot: скрытое поле против ботов -->
+              <p style="display: none">
+                <label>
+                  Не заполняйте это поле: <input name="bot-field" tabindex="-1" autocomplete="off" />
+                </label>
+              </p>
+
+              <div class="form__row">
+                <div class="field">
+                  <label for="cf-name">Как вас зовут</label>
+                  <input
+                    type="text"
+                    id="cf-name"
+                    name="name"
+                    placeholder="Алексей"
+                    required
+                    autocomplete="name"
+                  />
+                </div>
+                <div class="field">
+                  <label for="cf-contact">Telegram или email</label>
+                  <input
+                    type="text"
+                    id="cf-contact"
+                    name="contact"
+                    placeholder="@username или a@b.com"
+                    required
+                    autocomplete="email"
+                  />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="cf-service">Что интересует</label>
+                <select id="cf-service" name="service"></select>
+              </div>
+
+              <div class="field">
+                <label for="cf-message">Задача</label>
+                <textarea
+                  id="cf-message"
+                  name="message"
+                  placeholder="Коротко о проекте: что нужно, сроки, бюджет"
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" class="btn btn--primary btn--block btn--lg">
+                Отправить заявку
+              </button>
+
+              <p class="form__note">
+                Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.
+              </p>
+
+              <div class="form__success" id="form-success">
+                Спасибо! Заявка отправлена — ответим в течение рабочего дня.
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ============ CTA: ОПЛАТА В TON ============ -->
+      <section class="section">
+        <div class="container">
+          <div class="pay-cta reveal">
+            <h2 class="pay-cta__title">Готовы начать?</h2>
+            <p class="pay-cta__text">
+              Выберите услугу выше и оплатите криптой прямо на сайте. И напишите нам,
+              если нужен индивидуальный расчёт.
+            </p>
+            <div class="pay-cta__actions">
+              <a href="#services" class="btn btn--primary btn--lg">Выбрать услугу</a>
+              <a
+                href="https://t.me/tonvisit_support"
+                class="btn btn--tg btn--lg"
+                id="cta-telegram"
+                target="_blank"
+                rel="noopener"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.94 6.7-1.7 8.02c-.12.55-.45.68-.91.42l-2.52-1.86-1.22 1.17c-.13.13-.24.24-.5.24l.18-2.54 4.72-4.26c.2-.18-.05-.28-.32-.11L6.98 13.2l-2.44-.76c-.53-.16-.54-.53.11-.79l9.55-3.68c.42-.15.79.1.65.95z" />
+                </svg>
+                Написать в Telegram
+              </a>
+            </div>
+            <div class="pay-cta__features">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                Без комиссии с нашей стороны
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                TON и USDT
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                Закрывающие документы по запросу
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ ФУТЕР ============ -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__top">
+          <div>
+            <a href="#top" class="logo" aria-label="TONVISIT">
+              <span class="logo__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9.28 3.5 3 13.1h4.5l1.9-3.1 1.9 3.1H16l-6.72-9.6zm4.44 0L3 19.5h4.5l6.72-9.6-1.9-3.1-1.9 3.1H13.5l.22-3.1z" />
+                </svg>
+              </span>
+              <span>TONVISIT</span>
+            </a>
+            <p class="footer__about">
+              Крипто-компания: аудит смарт-контрактов, платёжная интеграция, OTC и
+              консалтинг в экосистеме TON.
+            </p>
+            <div class="footer__socials" id="socials"></div>
+          </div>
+
+          <div>
+            <h4 class="footer__col-title">Навигация</h4>
+            <div class="footer__links" id="footer-nav"></div>
+          </div>
+
+          <div>
+            <h4 class="footer__col-title">Контакты</h4>
+            <div class="footer__links" id="footer-contacts"></div>
+          </div>
+        </div>
+
+        <div class="footer__bottom">
+          <p class="footer__disclaimer" id="footer-legal"></p>
+          <span class="ton-badge">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9.28 3.5 3 13.1h4.5l1.9-3.1 1.9 3.1H16l-6.72-9.6zm4.44 0L3 19.5h4.5l6.72-9.6-1.9-3.1-1.9 3.1H13.5l.22-3.1z" />
+            </svg>
+            Работаем в сети TON
+          </span>
+        </div>
+      </div>
+    </footer>
+
+
+    <!-- ============ МОДАЛЬНОЕ ОКНО ОПЛАТЫ ============ -->
+    <div
+      class="modal"
+      id="pay-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pay-title"
+      aria-hidden="true"
+    >
+      <div class="modal__backdrop" data-close-modal></div>
+      <div class="modal__dialog">
+        <div class="modal__header">
+          <div>
+            <h3 class="modal__title" id="pay-title">Оплата в TON</h3>
+            <p class="modal__subtitle" id="pay-subtitle"></p>
+          </div>
+          <button class="modal__close" data-close-modal aria-label="Закрыть окно">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div class="modal__body">
+          <!-- Статус проверки платежа -->
+          <div class="pay-status" id="pay-status">
+            <span id="pay-status-icon" class="pay-status__icon"></span>
+            <div class="pay-status__body" id="pay-status-body"></div>
+          </div>
+
+          <div class="pay-amount">
+            <div class="pay-amount__label">К оплате</div>
+            <div class="pay-amount__value" id="pay-amount">0<span>TON</span></div>
+            <div class="pay-amount__usd" id="pay-usd"></div>
+          </div>
+
+          <div class="order-id">
+            <span class="order-id__label">Номер заказа</span>
+            <span class="order-id__value" id="pay-order-id">—</span>
+          </div>
+
+          <div class="qr" id="pay-qr" aria-label="QR-код для оплаты"></div>
+          <p class="qr__hint">Наведите камеру телефона, чтобы оплатить</p>
+
+          <div class="wallet-row">
+            <span class="wallet-row__addr" id="pay-wallet">—</span>
+            <button class="copy-btn" id="copy-wallet">Копировать</button>
+          </div>
+
+          <div class="wallets">
+            <span class="wallet-chip"><i class="wallet-chip__dot" style="background: #45b6ff"></i>Tonkeeper</span>
+            <span class="wallet-chip"><i class="wallet-chip__dot" style="background: #2aabee"></i>Telegram</span>
+            <span class="wallet-chip"><i class="wallet-chip__dot" style="background: #0088cc"></i>Tonhub</span>
+            <span class="wallet-chip"><i class="wallet-chip__dot" style="background: #7c5cff"></i>MyTonWallet</span>
+          </div>
+
+          <div class="pay-actions">
+            <a href="#" class="btn btn--primary btn--block btn--lg" id="pay-open-wallet">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5" />
+                <rect x="16" y="13" width="4" height="4" rx="1" />
+              </svg>
+              Открыть кошелёк
+            </a>
+            <button class="btn btn--ghost btn--block" id="pay-check">
+              Проверить оплату
+            </button>
+          </div>
+
+          <div class="pay-note">
+            <strong>Важно:</strong> переводите точную сумму. Комментарий
+            <strong id="pay-comment">—</strong> подставляется автоматически — по нему мы
+            найдём ваш платёж и подтвердим заказ. Сеть — только <strong>TON Mainnet</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вендоренная QR-библиотека (без CDN). Загружается до main.js как глобаль window.qrcode -->
+    <script src="/src/js/qrcode-generator.js"></script>
+    <script type="module" src="/src/js/main.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,22 @@
+{
+  "name": "tonvisit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TONVISIT — сайт-визитка крипто-компании с оплатой в TON. Статика для Netlify.",
+  "scripts": {
+    "dev": "npx --yes serve . -l 5173",
+    "netlify:dev": "npx --yes netlify-cli@latest dev",
+    "serve": "npx --yes serve . -l 4173",
+    "test": "node tests/site.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.0"
+  },
+  "keywords": [
+    "ton",
+    "crypto",
+    "netlify",
+    "landing"
+  ],
+  "license": "MIT"
+}

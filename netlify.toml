@@ -1,0 +1,63 @@
+# ==========================================================
+#  TONVISIT — статический сайт-визитка
+#  Деплой: Netlify (drag & drop папки или connect Git-репозиторий)
+#  Сборка не требуется: чистый HTML/CSS/JS
+# ==========================================================
+
+[build]
+  publish = "."
+  command = "echo 'Static site: no build step required.'"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ---------- Безопасность + CSP для всех страниц ----------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    X-DNS-Prefetch-Control = "on"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://tonapi.io https://*.tonapi.io; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+# ---------- Кеширование ----------
+# HTML отдаём всегда свежим, иначе пользователи залипнут на старой версии
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/404.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# CSS/JS с хешем в имени не используем, поэтому кешируем на сутки с revalidate
+[[headers]]
+  for = "/src/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/src/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/public/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# ---------- Редиректы ----------
+# Оплата всегда на /pay/ — на случай смены адреса страницы в будущем
+[[redirects]]
+  from = "/pay/"
+  to = "/index.html"
+  status = 301
+
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301

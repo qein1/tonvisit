@@ -63,9 +63,12 @@
     return;
   }
 
-  var transfer = new URLSearchParams({ address: address, amount: String(amount) });
+  var transfer = new URLSearchParams({ amount: String(amount) });
   if (comment) transfer.set('text', comment);
-  var deepLink = 'ton://transfer?' + transfer.toString();
+  // Адрес — в пути, а не в query. Иначе кошелёк отвечает «Неверная ссылка»:
+  // разбор требует подстроку «/transfer/», а address в query считается
+  // неподдерживаемым параметром (проверено по коду mytonwallet и tonwhales).
+  var deepLink = 'ton://transfer/' + address + '?' + transfer.toString();
 
   $('pr-sum').textContent = formatGram(amount) + ' GRAM';
   $('pr-open').href = deepLink;

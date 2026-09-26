@@ -265,34 +265,35 @@ const qrNoOrigin = tonMod.buildQrUrl({
   comment: 'TV-TEST1-audit',
   origin: '',
 });
-ok(qrNoOrigin.startsWith('ton://transfer?'), 'Без origin возвращается рабочий ton://');
+ok(qrNoOrigin.startsWith('ton://transfer/'), 'Без origin возвращается рабочий ton:// с адресом в пути');
 
 console.log('\n[4] Deep-link оплаты');
 const href = $('#pay-open-wallet').getAttribute('href');
-ok(href.startsWith('ton://transfer?'), 'Ссылка ведёт на ton://transfer');
-const params = new URLSearchParams(href.split('?')[1]);
+ok(href.startsWith('ton://transfer/'), 'Ссылка ведёт на ton://transfer/');
+// Регресс: адрес обязан быть в ПУТИ. В query кошельки его не понимают
+// и показывают «Неверная ссылка» (проверено по коду mytonwallet и tonwhales).
+ok(href.includes('/transfer/'), 'Есть подстрока /transfer/ — иначе парсер вернёт отказ');
+ok(!href.startsWith('ton://transfer?'), 'Ссылка не начинается с transfer? — адрес не в query');
+ok(!/[?&]address=/.test(href), 'Параметра address в query нет: он неподдерживаемый');
+const deepUrl = new URL(href.replace('ton://', 'https://'));
+ok(
+  deepUrl.pathname.replace(/\//g, '') === cfgMod.CONFIG.payment.wallet,
+  'Адрес получателя берётся из пути'
+);
+const params = deepUrl.searchParams;
 ok(params.get('amount') === '4500000000', 'Сумма в нанотонах (4.5 GRAM = 4500000000)');
-ok(params.get('address') === cfgMod.CONFIG.payment.wallet, 'Адрес получателя в ссылке');
 ok(params.get('text') === orderId + '-audit', 'Комментарий в ссылке');
-// Регресс: Tonkeeper показывал «Неверная ссылка», когда address шёл не первым
+// Белый список параметров взят из rawParseTonDeeplink (mytonwallet)
+const SUPPORTED_PARAMS = new Set(['amount', 'text', 'bin', 'jetton', 'nft', 'init', 'stateInit', 'exp']);
 ok(
-  [...params.keys()][0] === 'address',
-  'address — первый параметр ссылки (иначе кошелёк не находит получателя)'
+  [...params.keys()].every((k) => SUPPORTED_PARAMS.has(k)),
+  'Нет неподдерживаемых параметров: ' + [...params.keys()].join(', ')
 );
 ok(
-  /^\d+$/.test(params.get('amount')),
-  'amount — целое число нанотонов, без дробной части'
+  !(params.has('bin') && params.has('text')),
+  'text и bin не используются одновременно (они взаимоисключающие)'
 );
-// exp удалён: разбор ссылки у кошельков строгий, лишний параметр
-// вызывал «Неверная ссылка». Проверяем, что в ссылке ровно 3 поля.
-ok(
-  [...params.keys()].every((k) => ['address', 'amount', 'text'].includes(k)),
-  'В ссылке только известные кошелькам параметры: ' + [...params.keys()].join(', ')
-);
-ok(
-  !params.has('exp'),
-  'Убран лишний параметр exp — из-за него был «Неверная ссылка»'
-);
+ok(/^\d+$/.test(params.get('amount')), 'amount — целое число нанотонов');
 
 console.log('\n[4b] Курс GRAM → USD с tonapi.io');
 ok(
@@ -498,12 +499,16 @@ const good = runRedirect(
 );
 ok(good.sum === '4.5 GRAM', 'Сумма показана в понятных единицах: ' + good.sum);
 ok(
-  good.openHref && good.openHref.startsWith('ton://transfer?'),
-  'Кнопка ведёт на ton://transfer'
+  good.openHref && good.openHref.startsWith('ton://transfer/'),
+  'Кнопка ведёт на ton://transfer/'
 );
 ok(
-  good.openHref.includes('address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM'),
-  'Адрес получателя передан в кошелёк'
+  good.openHref.includes('/transfer/UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM?'),
+  'Адрес получателя передан в пути ссылки'
+);
+ok(
+  !/[?&]address=/.test(good.openHref || ''),
+  'В ссылке редиректа нет параметра address в query'
 );
 ok(good.openHref.includes('amount=4500000000'), 'Сумма в нанотонах');
 ok(good.openHref.includes('text=TV-TEST1-audit'), 'Комментарий заказа передан');
@@ -535,8 +540,8 @@ ok(
   'Комментарий с HTML не попадает в ссылку как разметка'
 );
 ok(
-  injected.openHref && injected.openHref.startsWith('ton://transfer?'),
-  'Даже с вредным комментарием ссылка остаётся ton://transfer'
+  injected.openHref && injected.openHref.startsWith('ton://transfer/'),
+  'Даже с вредным комментарием ссылка остаётся ton://transfer/'
 );
 
 console.log('\n' + '='.repeat(46));

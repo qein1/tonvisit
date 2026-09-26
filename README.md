@@ -20,15 +20,19 @@ src/js/config.js
 
 ```js
 payment: {
-  wallet: 'ЗДЕСЬ_ВАШ_КОШЕЛЁК_TON',  // напр. EQBuTJYnosvOduCbm5iT8vXd5kuDo_OvFkg2-mdCvMIlpJKZ
+  wallet: 'ЗДЕСЬ_ВАШ_КОШЕЛЁК_TON',  // напр. UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM
 }
 ```
 
 Как узнать свой адрес: откройте Tonkeeper → «Copy address». Поддерживаются форматы
 `EQ…` (bounceable), `UQ…` (non-bounceable) и `0:…` (raw).
 
-> ⚠️ **Важно:** в комплекте стоит демонстрационный адрес без средств. Пока вы его не
-> замените — деньги не придут вам.
+> ✅ **Кошелёк уже прописан:** `UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM`
+> (raw: `0:1dad6272b5e35b48f9fd3475a338ab2c1d678bf596c014572521ff0452db0c71`).
+>
+> ⚠️ Перед приёмом живых платежей сделайте тестовый перевод на 0.01 TON и убедитесь,
+> что «Проверить оплату» его находит. И не отправляйте всю сумму на кошелёк, который
+> нельзя выгрузить в-seed до продакшена.
 
 Затем локальный запуск:
 

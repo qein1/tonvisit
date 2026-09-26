@@ -96,7 +96,7 @@ export const CONFIG = {
   // ВАЖНО: замените адрес на свой кошелёк (Tonkeeper → Copy address).
   // Формат: EQ... / UQ... / 0:... Поддерживается и raw (0:...), и friendly.
   payment: {
-    wallet: 'EQBuTJYnosvOduCbm5iT8vXd5kuDo_OvFkg2-mdCvMIlpJKZ',
+    wallet: 'UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM',
     // USDT в сети TON (Jetton). Оставьте пустым, если не нужно.
     usdtWallet: '',
     currency: 'TON',

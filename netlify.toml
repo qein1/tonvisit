@@ -34,16 +34,26 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# CSS/JS с хешем в имени не используем, поэтому кешируем на сутки с revalidate
+# CSS/JS без хеша в имени — кешировать надолго нельзя.
+#
+# Раньше стояло max-age=86400, stale-while-revalidate=604800, и это ломало
+# обновления: браузер получал право отдавать устаревший файл ещё 7 дней после
+# истечения суток. Из-за этого правка deep-link не доезжала до телефонов
+# неделями, и всё выглядело так, будто «ничего не поменялось».
+#
+# max-age=0, must-revalidate — файл всегда сверяется с сервером. Размер
+# скриптов маленький, а мгновенная доставка правок важнее.
+# Если захотите вернуть долгий кеш, сначала добавьте хеш в имя файла
+# (styles.<hash>.css) — тогда кешировать на год безопасно.
 [[headers]]
   for = "/src/css/*"
   [headers.values]
-    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/src/js/*"
   [headers.values]
-    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/public/*"

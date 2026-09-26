@@ -573,6 +573,58 @@ function initCoins() {
  *  Хедер: скролл, мобильное меню, активная ссылка
  * ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------
+ *  Переходы по якорям
+ * ------------------------------------------------------------------ */
+
+/** Плавно прокручивает к секции с поправкой на фиксированный хедер. */
+function scrollToSection(target) {
+  const header = $('#header');
+  const offset = (header ? header.offsetHeight : 0) + 16;
+  const top = target.getBoundingClientRect().top + window.scrollY - offset;
+  const reduceMotion =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  window.scrollTo({ top: Math.max(top, 0), behavior: reduceMotion ? 'auto' : 'smooth' });
+
+  // Фокус на секцию: иначе следующий Tab уходит из меню обратно в шапку.
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
+}
+
+/**
+ * Ссылки вида href="#contact".
+ *
+ * Зачем это нужно: по умолчанию браузер дописывает якорь в адресную строку,
+ * и при перезагрузке страницы сам прыгает к этому блоку. Пользователь
+ * нажимает «Заявка», читает блок и по F5 снова оказывается внизу — вместо
+ * того чтобы вернуться наверх. Поэтому скроллим сами, а якорь из адреса
+ * убираем через replaceState (без новой записи в истории).
+ *
+ * Прямые ссылки вида site.com#faq при этом продолжают работать: якорь
+ * обрабатывается браузером до загрузки скриптов.
+ */
+function initAnchors() {
+  document.addEventListener('click', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function') return;
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    // '#' — служебная ссылка (кнопка оплаты подставляет ton:// отдельно),
+    // не наш якорь. Внешние ссылки и t.me не трогаем.
+    if (!href || href === '#' || href.charAt(0) !== '#') return;
+
+    const target = document.getElementById(href.slice(1));
+    if (!target) return;
+
+    e.preventDefault();
+    scrollToSection(target);
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  });
+}
+
 function initHeader() {
   const header = $('#header');
   const burger = $('#burger');
@@ -843,6 +895,7 @@ async function init() {
   // 1. Сначала быстрый рендер со стандартным курсом — страница видна сразу
   renderAll();
   initHeader();
+  initAnchors();
   initPayment();
   initForm();
   initReveal();

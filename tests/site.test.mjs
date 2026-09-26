@@ -126,6 +126,39 @@ ok(
   'Секция «Что мы делаем» доступна из навигации'
 );
 
+console.log('\n[1c] Якоря: перезагрузка не должна прыгать к блоку «Заявка»');
+// jsdom не умеет реально скроллить — считаем вызовы scrollTo
+let scrollCalls = [];
+window.scrollTo = (arg) => { scrollCalls.push(arg); };
+// getBoundingClientRect в jsdom всегда 0 — подменяем у нужной секции
+const contactRect = { top: 2400, bottom: 3200, left: 0, right: 0, width: 0, height: 800 };
+$('#contact').getBoundingClientRect = () => contactRect;
+
+const contactLink = $$('a[href="#contact"]')[0];
+ok(!!contactLink, 'Ссылка на блок «Заявка» есть в разметке');
+contactLink.click();
+await wait(20);
+ok(scrollCalls.length === 1, 'Клик по «Заявке» прокручивает страницу');
+ok(
+  scrollCalls[0] && Math.abs(scrollCalls[0].top - (2400 - ($('#header').offsetHeight || 0) - 16)) < 1,
+  'Прокрутка с учётом высоты фиксированного хедера',
+  JSON.stringify(scrollCalls[0])
+);
+ok(
+  window.location.hash === '' && !window.location.href.includes('#contact'),
+  `После клика якорь убран из адреса (был: "${window.location.hash}")`
+);
+ok(
+  $('#contact').hasAttribute('tabindex') && window.document.activeElement === $('#contact'),
+  'Фокус передан на секцию — Tab продолжает по странице'
+);
+// Кнопка оплаты использует href="#" и должна остаться нетронутой
+const payBtn = $('#pay-open-wallet');
+ok(payBtn.getAttribute('href') !== null, 'Кнопка оплаты сохраняет свой href');
+const beforePay = scrollCalls.length;
+payBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+ok(scrollCalls.length === beforePay, 'Служебная ссылка href="#" не вызывает прокрутку');
+
 console.log('\n[2] Данные в карточках');
 const firstCard = $('#services-grid .card');
 ok(firstCard.textContent.includes(cfgMod.CONFIG.services[0].title), 'Название услуги в карточке');

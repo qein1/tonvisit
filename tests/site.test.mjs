@@ -70,6 +70,43 @@ const $ = (s) => window.document.querySelector(s);
 const $$ = (s) => Array.from(window.document.querySelectorAll(s));
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+console.log('\n[1a] Возврат наверх при перезагрузке');
+// Скрипт подключён синхронно в <head> — иначе браузер успеет восстановить скролл
+const headScripts = $$('head script[src]').map((s) => s.getAttribute('src'));
+ok(headScripts.includes('/src/js/scroll-top.js'), 'scroll-top.js подключён в <head>');
+ok(
+  !/defer|async/i.test($('head script[src="/src/js/scroll-top.js"]')?.outerHTML || ''),
+  'Скрипт без defer/async — иначе он запустится поздно'
+);
+ok(
+  $$('head script:not([src])').every((s) => (s.type || '') === 'application/ld+json'),
+  "В <head> нет inline-скриптов: CSP со script-src 'self' их бы заблокировал"
+);
+
+// Проверяем сам скрипт на изолированных документах с разным состоянием адреса
+const runScrollTop = (url) => {
+  const d = new JSDOM('<p>x</p>', { runScripts: 'outside-only', url, pretendToBeVisual: true });
+  const calls = [];
+  d.window.scrollTo = (arg) => calls.push(arg);
+  d.window.history.scrollRestoration = 'auto';
+  d.window.eval(readFileSync(`${SITE}/src/js/scroll-top.js`, 'utf8'));
+  return { window: d.window, calls };
+};
+
+const plain = runScrollTop('https://example.netlify.app/');
+ok(plain.window.history.scrollRestoration === 'manual', 'Восстановление позиции скролла отключено');
+ok(plain.calls.length > 0, 'Страница без якоря прокручивается наверх');
+
+const withHash = runScrollTop('https://example.netlify.app/#faq');
+ok(withHash.calls.length === 0, 'Прямая ссылка с якорем не перебивается — скролл не трогаем');
+// scrollRestoration = 'manual' и здесь: переход по якорю — это fragment navigation,
+// он выполняется браузером независимо от scrollRestoration, поэтому direct-links работают.
+// А вот возвращаться к прошлой позиции при F5 по такой ссылке смысла нет.
+ok(
+  withHash.window.history.scrollRestoration === 'manual',
+  'И при прямой ссылке восстановление позиции отключено (якорь и так отработает)'
+);
+
 console.log('\n[1] Рендер секций');
 ok($$('#nav .nav__link').length === cfgMod.CONFIG.nav.length, 'Навигация отрисована');
 ok($$('#stats .stat').length === cfgMod.CONFIG.stats.length, 'Статистика отрисована');

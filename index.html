@@ -36,6 +36,13 @@
     <link rel="apple-touch-icon" href="/public/favicon.svg" />
     <link rel="stylesheet" href="/src/css/styles.css" />
 
+    <!--
+      Синхронно в <head>, до отрисовки страницы: иначе браузер успеет
+      восстановить позицию скролла и вернёт посетителя в середину сайта.
+      Именно синхронно (без defer/async) — иначе он запустится слишком поздно.
+    -->
+    <script src="/src/js/scroll-top.js"></script>
+
     <!-- Структурированные данные для Google -->
     <script type="application/ld+json">
       {

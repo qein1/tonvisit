@@ -34,14 +34,20 @@
 
     <link rel="icon" type="image/svg+xml" href="/public/favicon.svg" />
     <link rel="apple-touch-icon" href="/public/favicon.svg" />
-    <link rel="stylesheet" href="/src/css/styles.css" />
+    <!--
+      ASSET_VERSION: менять при каждом деплое, синхронно с такой же
+      константой в src/js/main.js. Без этой метки браузер месяцами
+      отдаёт старый JS из кеша, и правки на сайте выглядят как
+      «ничего не изменилось».
+    -->
+    <link rel="stylesheet" href="/src/css/styles.css?v=20260927b" />
 
     <!--
       Синхронно в <head>, до отрисовки страницы: иначе браузер успеет
       восстановить позицию скролла и вернёт посетителя в середину сайта.
       Именно синхронно (без defer/async) — иначе он запустится слишком поздно.
     -->
-    <script src="/src/js/scroll-top.js"></script>
+    <script src="/src/js/scroll-top.js?v=20260927b"></script>
 
     <!-- Структурированные данные для Google -->
     <script type="application/ld+json">
@@ -531,8 +537,8 @@
     </div>
 
     <!-- Вендоренная QR-библиотека (без CDN). Загружается до main.js как глобаль window.qrcode -->
-    <script src="/src/js/qrcode-generator.js"></script>
-    <script type="module" src="/src/js/main.js"></script>
+    <script src="/src/js/qrcode-generator.js?v=20260927b"></script>
+    <script type="module" src="/src/js/main.js?v=20260927b"></script>
   </body>
 </html>
 

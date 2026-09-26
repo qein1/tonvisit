@@ -66,10 +66,12 @@ const toUrl = (p) => pathToFileURL(`${SITE}/${p}`).href;
 const cfgMod = await import(toUrl('src/js/config.js'));
 const tonMod = await import(toUrl('src/js/ton.js'));
 
-// Выполняем main.js в контексте окна, подменив модульные импорты
+// Выполняем main.js в контексте окна, подменив модульные импорты.
+// Регулярки терпят метку версии ?v=… в пути импорта — она нужна, чтобы
+// браузер не отдавал старый JS из кеша после деплоя.
 const mainSrc = readFileSync(`${SITE}/src/js/main.js`, 'utf8')
   .replace(/import\s*\{\s*CONFIG\s*\}\s*from\s*'[^']+';/, 'const CONFIG = window.__CONFIG;')
-  .replace(/import\s*\{[\s\S]*?\}\s*from\s*'[^']*ton\.js';/,
+  .replace(/import\s*\{[\s\S]*?\}\s*from\s*'[^']*ton\.js(?:\?[^']*)?';/,
     ['createOrder','buildPaymentLink','buildQrUrl','buildWalletLink','buildTxLink','checkPayment','toRawAddress','updateOrder']
       .map((n) => `const ${n} = window.__ton.${n};`).join('\n'));
 
@@ -81,10 +83,62 @@ const $ = (s) => window.document.querySelector(s);
 const $$ = (s) => Array.from(window.document.querySelectorAll(s));
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-console.log('\n[1a] Возврат наверх при перезагрузке');
+console.log('\n[1a] Версионирование ассетов (защита от кеша браузера)');
+// Регресс: без метки ?v= браузер месяцами отдаёт прежний JS, и правки
+// на сайте выглядят как «ничего не изменилось». Метка должна стоять
+// во всех подключениях и совпадать между собой.
+const versionOf = (src) => (src.match(/\?v=([A-Za-z0-9]+)/) || [])[1];
+const htmlAssets = readFileSync(`${SITE}/index.html`, 'utf8');
+const mainJs = readFileSync(`${SITE}/src/js/main.js`, 'utf8');
+const vHtml = versionOf(htmlAssets);
+ok(!!vHtml, 'В index.html есть метка версии ?v=');
+
+const scriptTags = [...htmlAssets.matchAll(/(?:src|href)="(\/src\/[^"]+)"/g)].map((m) => m[1]);
+const versioned = scriptTags.filter((u) => u.includes('?v='));
+ok(
+  versioned.length === scriptTags.length && scriptTags.length > 0,
+  `Все ассеты index.html версионированы (${versioned.length}/${scriptTags.length})`
+);
+ok(
+  scriptTags.every((u) => versionOf(u) === vHtml),
+  'Метка версии одинакова во всех ассетах index.html'
+);
+
+// Импорты внутри main.js — отдельный кеш, их тоже нужно версионировать
+const mainImports = [...mainJs.matchAll(/from\s*'(\.\/[^']+)'/g)].map((m) => m[1]);
+ok(
+  mainImports.length >= 2,
+  `В main.js найдено импортов: ${mainImports.length}`
+);
+ok(
+  mainImports.every((u) => u.includes('?v=')),
+  'Импорты в main.js версионированы (иначе ton.js и config.js остаются в кеше)'
+);
+ok(
+  mainImports.every((u) => versionOf(u) === vHtml),
+  'Метка версии в импортах совпадает с index.html'
+);
+ok(
+  !/const\s+ASSET_VERSION[^=]*=\s*['"][^'"]+['"]\s*;[\s\S]{0,200}?from\s*['"]\.\/[^'"]+['"]\s*\+\s*ASSET_VERSION/.test(mainJs),
+  'Путь импорта записан литералом: склейка с константой дала бы ошибку TDZ'
+);
+// Согласованность по всем страницам
+for (const page of ['pay-redirect.html', 'thanks.html', '404.html']) {
+  const src = readFileSync(`${SITE}/${page}`, 'utf8');
+  const assets = [...src.matchAll(/(?:src|href)="(\/src\/[^"]+)"/g)].map((m) => m[1]);
+  ok(
+    assets.length > 0 && assets.every((u) => versionOf(u) === vHtml),
+    `${page}: версия ассетов совпадает с index.html`
+  );
+}
+
+console.log('\n[1b] Возврат наверх при перезагрузке');
 // Скрипт подключён синхронно в <head> — иначе браузер успеет восстановить скролл
 const headScripts = $$('head script[src]').map((s) => s.getAttribute('src'));
-ok(headScripts.includes('/src/js/scroll-top.js'), 'scroll-top.js подключён в <head>');
+ok(
+  headScripts.some((s) => s.startsWith('/src/js/scroll-top.js')),
+  'scroll-top.js подключён в <head>'
+);
 ok(
   !/defer|async/i.test($('head script[src="/src/js/scroll-top.js"]')?.outerHTML || ''),
   'Скрипт без defer/async — иначе он запустится поздно'

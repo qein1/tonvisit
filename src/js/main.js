@@ -8,6 +8,7 @@ import { CONFIG } from './config.js';
 import {
   createOrder,
   buildPaymentLink,
+  buildQrUrl,
   buildWalletLink,
   buildTxLink,
   checkPayment,
@@ -355,13 +356,25 @@ function openPayModal(serviceId) {
   $('#pay-comment').textContent = order.comment;
   $('#pay-wallet').textContent = CONFIG.payment.wallet;
 
+  // Кнопка «Открыть кошелёк» — прямой ton:// (работает, клик это жест пользователя)
   const link = buildPaymentLink({
     wallet: CONFIG.payment.wallet,
     ton: service.priceTon,
     comment: order.comment,
   });
   $('#pay-open-wallet').href = link;
-  renderQr(link);
+
+  // А в QR кладём https-ссылку через редирект: сырой ton:// не переваривают
+  // Google Объектив и часть других сканеров — они передают кошельку
+  // искажённый URI, и тот отвечает «Неверная ссылка».
+  renderQr(
+    buildQrUrl({
+      wallet: CONFIG.payment.wallet,
+      ton: service.priceTon,
+      comment: order.comment,
+      origin: window.location.origin,
+    })
+  );
 
   $('#pay-check').innerHTML = 'Проверить оплату';
   $('#pay-check').disabled = false;

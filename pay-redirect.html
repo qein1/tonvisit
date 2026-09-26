@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Оплата — TONVISIT</title>
+    <!--
+      Страница-редирект. В неё попадают при сканировании QR-кода.
+
+      Зачем она нужна: в самом QR раньше лежала ссылка ton://transfer.
+      Google Объектив и часть других сканеров custom-схемы не открывают:
+      они показывают превью, а по кнопке «Открыть» отдают кошельку
+      искажённый URI, и Tonkeeper отвечал «Неверная ссылка».
+      Теперь в QR обычная https-ссылка сюда, а уже эта страница
+      перекидывает в кошелёк.
+
+      noindex: техническая страница, в поиск не нужна.
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#06080f" />
+    <link rel="icon" type="image/svg+xml" href="/public/favicon.svg" />
+    <link rel="stylesheet" href="/src/css/styles.css" />
+  </head>
+
+  <body class="pay-redirect">
+    <div class="pay-redirect__card">
+      <div class="pay-redirect__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 1 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5" />
+          <rect x="16" y="13" width="4" height="4" rx="1" />
+        </svg>
+      </div>
+
+      <h1 class="pay-redirect__title" id="pr-title">Открываем кошелёк…</h1>
+      <p class="pay-redirect__sum" id="pr-sum"></p>
+      <p class="pay-redirect__hint" id="pr-hint">Перенаправляем в приложение кошелька</p>
+
+      <!--
+        Кнопка нужна как запасной вариант: iOS Safari и некоторые Android
+        браузеры блокируют автоматический переход по custom-схеме,
+        если он не вызван из жеста пользователя.
+      -->
+      <a class="btn btn--primary btn--block btn--lg" id="pr-open" href="#" hidden>
+        Открыть кошелёк
+      </a>
+
+      <p class="pay-redirect__note" id="pr-note" hidden>
+        Если кошелёк не открылся, скопируйте адрес и отправьте перевод вручную:
+      </p>
+      <div class="pay-redirect__addr" id="pr-addr" hidden></div>
+
+      <p class="pay-redirect__back">
+        <a href="/">Вернуться на сайт</a>
+      </p>
+    </div>
+
+    <!--
+      Внешний файл, а не <script> inline: в netlify.toml выставлен CSP
+      со script-src 'self' без 'unsafe-inline', поэтому инлайн-код
+      выполняться не будет — страница молча останется пустой.
+    -->
+    <script src="/src/js/pay-redirect.js"></script>
+  </body>
+</html>

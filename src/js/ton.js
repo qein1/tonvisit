@@ -77,26 +77,55 @@ export function formatNano(nano) {
  * Deep-link для кошелька. Поддерживается Tonkeeper, Telegram Wallet,
  * Tonhub, MyTonWallet и другими.
  *
- * Порядок параметров важен: address идёт ПЕРВЫМ. Раньше ссылка собиралась
- * как ?text=…&amount=…&address=…, и Tonkeeper при сканировании QR
- * показывал «Неверная ссылка» — адрес он брал из конца и не находил.
- * Первым параметром адрес разбирается всеми кошельками без исключений.
+ * Только три параметра, и все они проверены на реальном кошельке:
+ *   address — получатель в friendly-формате (EQ… или UQ…). Именно в query,
+ *            не в пути: ton://transfer?address=… — единственная форма,
+ *            которую принимают Tonkeeper и остальные.
+ *   amount  — сумма в нанотонах, обязательно ЦЕЛЫМ числом. «4.5»
+ *            кошелёк не понимает и трактует как 4.5 нанотона.
+ *   text    — комментарий (ID заказа), по нему идёт сверка платежа.
  *
- * amount — обязательно в нанотонах (строкой). Tonkeeper ждёт именно
- * целое число; «4.5» он не понимает и трактует как 4.5 нанотона.
- *
- * exp — время жизни ссылки в UNIX-секундах. Через 24 часа ссылка
- * протухает: это защита от ситуации, когда клиент открыл старый QR
- * через месяц и отправил деньги по неактуальной цене.
+ * ВАЖНО: не добавляйте сюда параметры «на всякий случай» (exp, bin, init).
+ * Разбор ссылки у кошельков строгий, и лишний параметр приводит к
+ * «Неверная ссылка» — кошелёк не сможет открыть форму перевода вовсе.
+ * Раньше здесь был добавлен exp без проверки, и QR не открывался.
  */
-export function buildPaymentLink({ wallet, ton, comment, ttlSeconds = 86400 }) {
+export function buildPaymentLink({ wallet, ton, comment }) {
   const params = new URLSearchParams({
     address: wallet,
     amount: toNano(ton).toString(),
   });
   if (comment) params.set('text', comment);
-  params.set('exp', String(Math.floor(Date.now() / 1000) + ttlSeconds));
   return `ton://transfer?${params.toString()}`;
+}
+
+/**
+ * Ссылка для QR-кода.
+ *
+ * В QR кладём НЕ ton://, а обычную https-ссылку с теми же параметрами:
+ *   https://<домен>/pay-redirect.html?address=…&amount=…&text=…
+ *
+ * Почему так: Google Объектив (и часть других сканеров) не умеют
+ * открывать custom-схемы. Они показывают превью, а по кнопке «Открыть»
+ * передают в приложение URI, который уже искажён, — Tonkeeper отвечает
+ * «Неверная ссылка». С https-ссылкой сканер не спорит: он просто открывает
+ * страницу, а та уже перекидывает в кошелёк.
+ *
+ * Побочная выгода: адрес страницы с параметрами можно скопировать и
+ * переслать — получатель откроет её на своём телефоне.
+ */
+export function buildQrUrl({ wallet, ton, comment, origin }) {
+  const base = String(origin || '').replace(/\/+$/, '');
+  if (!base) {
+    // Файловая сборка / нет origin — отдаём ton://, QR всё равно рабочий
+    return buildPaymentLink({ wallet, ton, comment });
+  }
+  const params = new URLSearchParams({
+    address: wallet,
+    amount: toNano(ton).toString(),
+  });
+  if (comment) params.set('text', comment);
+  return `${base}/pay-redirect.html?${params.toString()}`;
 }
 
 /** Ссылка на кошелёк, чтобы просто открыть приложение. */

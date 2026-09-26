@@ -1666,6 +1666,15 @@ ol {
   margin-bottom: 18px;
 }
 
+/* Подсказка «что делать, если камера не открыла кошелёк» */
+.qr__hint--sub {
+  margin-top: -10px;
+  margin-bottom: 18px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  opacity: 0.75;
+}
+
 /* Адрес кошелька + копирование */
 .wallet-row {
   display: flex;
@@ -2305,3 +2314,88 @@ ol {
   }
 }
 
+
+/* ============================================================
+   Страница-редирект оплаты (pay-redirect.html)
+   Открывается при сканировании QR-кода и перекидывает в кошелёк.
+   ============================================================ */
+
+.pay-redirect {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.pay-redirect__card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 26px;
+  text-align: center;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 20px);
+}
+
+.pay-redirect__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: rgba(69, 182, 255, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+.pay-redirect__icon svg { width: 26px; height: 26px; }
+
+.pay-redirect__title {
+  font-size: 21px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.pay-redirect__sum {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.pay-redirect__hint {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+.pay-redirect__note {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin: 20px 0 8px;
+  line-height: 1.45;
+}
+
+/* Адрес длинный — рвём по любому символу, иначе вылезает за карточку */
+.pay-redirect__addr {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 20px;
+  word-break: break-all;
+  user-select: all;
+}
+
+.pay-redirect__back {
+  font-size: 13px;
+  margin-top: 18px;
+}
+.pay-redirect__back a { color: var(--text-dim); }

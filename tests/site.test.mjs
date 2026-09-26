@@ -70,7 +70,7 @@ const tonMod = await import(toUrl('src/js/ton.js'));
 const mainSrc = readFileSync(`${SITE}/src/js/main.js`, 'utf8')
   .replace(/import\s*\{\s*CONFIG\s*\}\s*from\s*'[^']+';/, 'const CONFIG = window.__CONFIG;')
   .replace(/import\s*\{[\s\S]*?\}\s*from\s*'[^']*ton\.js';/,
-    ['createOrder','buildPaymentLink','buildWalletLink','buildTxLink','checkPayment','toRawAddress','updateOrder']
+    ['createOrder','buildPaymentLink','buildQrUrl','buildWalletLink','buildTxLink','checkPayment','toRawAddress','updateOrder']
       .map((n) => `const ${n} = window.__ton.${n};`).join('\n'));
 
 window.__CONFIG = cfgMod.CONFIG;
@@ -226,6 +226,47 @@ ok($('#pay-comment').textContent === orderId + '-audit', 'Комментарий
 ok($('#pay-wallet').textContent === cfgMod.CONFIG.payment.wallet, 'Адрес кошелька в модалке');
 ok($('#pay-qr').innerHTML.includes('<svg'), 'QR-код отрисован как SVG');
 
+console.log('\n[3b] QR устойчив к сканерам (Google Объектив и другие)');
+// Регресс: при сканировании QR через Google Объектив Tonkeeper получал
+// невалидный URI и показывал «Неверная ссылка». В QR кладём https-ссылку
+// с теми же параметрами, а не сырой ton:// — Объектив такие не переваривает.
+const qrHtml = readFileSync(`${SITE}/pay-redirect.html`, 'utf8');
+ok(qrHtml.includes('/src/js/pay-redirect.js'), 'Страница-редирект подключает внешний JS');
+ok(
+  $$('#head script:not([src])').length >= 0 &&
+    !/<script(?![^>]*\ssrc=)[^>]*>[\s\S]*?code/.test(qrHtml.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')),
+  'В pay-redirect.html нет inline-скриптов: CSP их бы заблокировал'
+);
+
+const qrLink = tonMod.buildQrUrl({
+  wallet: cfgMod.CONFIG.payment.wallet,
+  ton: cfgMod.CONFIG.services[0].priceTon,
+  comment: 'TV-TEST1-audit',
+  origin: 'https://tonvisit.example',
+});
+ok(qrLink.startsWith('https://'), 'В QR кладётся https-ссылка, а не ton://');
+ok(qrLink.includes('/pay-redirect.html?'), 'QR ведёт на страницу-редирект');
+const qrParams = new URLSearchParams(qrLink.split('?')[1]);
+ok(qrParams.get('address') === cfgMod.CONFIG.payment.wallet, 'Адрес получателя сохранён в QR-ссылке');
+ok(/^\d+$/.test(qrParams.get('amount')), 'amount в QR-ссылке — целое число нанотонов');
+ok(qrParams.get('text') === 'TV-TEST1-audit', 'Комментарий заказа сохранён в QR-ссылке');
+ok(
+  !/[\s"'<>`]/.test(qrLink),
+  'В QR-ссылке нет пробелов и кавычек — их ломают при кодировании'
+);
+ok(
+  /^(EQ|UQ)/.test(qrParams.get('address')),
+  'Адрес в friendly-формате (EQ/UQ), raw 0:… кошельки не примут'
+);
+// Без origin (файловая сборка) ссылка должна остаться рабочей
+const qrNoOrigin = tonMod.buildQrUrl({
+  wallet: cfgMod.CONFIG.payment.wallet,
+  ton: 4.5,
+  comment: 'TV-TEST1-audit',
+  origin: '',
+});
+ok(qrNoOrigin.startsWith('ton://transfer?'), 'Без origin возвращается рабочий ton://');
+
 console.log('\n[4] Deep-link оплаты');
 const href = $('#pay-open-wallet').getAttribute('href');
 ok(href.startsWith('ton://transfer?'), 'Ссылка ведёт на ton://transfer');
@@ -242,14 +283,15 @@ ok(
   /^\d+$/.test(params.get('amount')),
   'amount — целое число нанотонов, без дробной части'
 );
-const exp = Number(params.get('exp'));
+// exp удалён: разбор ссылки у кошельков строгий, лишний параметр
+// вызывал «Неверная ссылка». Проверяем, что в ссылке ровно 3 поля.
 ok(
-  Number.isFinite(exp) && exp > Math.floor(Date.now() / 1000),
-  'Ссылка имеет срок действия (exp в будущем)'
+  [...params.keys()].every((k) => ['address', 'amount', 'text'].includes(k)),
+  'В ссылке только известные кошелькам параметры: ' + [...params.keys()].join(', ')
 );
 ok(
-  exp - Math.floor(Date.now() / 1000) <= 86400,
-  'Срок действия ссылки — не больше суток'
+  !params.has('exp'),
+  'Убран лишний параметр exp — из-за него был «Неверная ссылка»'
 );
 
 console.log('\n[4b] Курс GRAM → USD с tonapi.io');
@@ -428,6 +470,74 @@ $('#contact-form').dispatchEvent(new window.Event('submit', { bubbles: true, can
 await wait(30);
 ok(openedUrl === null, 'Honeypot блокирует ботов');
 $('#contact-form').elements['bot-field'].value = '';
+
+console.log('\n[11] Страница-редирект оплаты: разбор и безопасность');
+// Прогоняем pay-redirect.js на изолированных документах с разными query
+const redirectSrc = readFileSync(`${SITE}/src/js/pay-redirect.js`, 'utf8');
+const redirectHtml = readFileSync(`${SITE}/pay-redirect.html`, 'utf8');
+
+const runRedirect = (query) => {
+  const d = new JSDOM(redirectHtml, {
+    runScripts: 'outside-only',
+    url: 'https://tonvisit.example/pay-redirect.html' + query,
+    pretendToBeVisual: true,
+  });
+  d.window.eval(redirectSrc);
+  const el = (id) => d.window.document.getElementById(id);
+  return {
+    href: d.window.location.href,
+    sum: el('pr-sum').textContent,
+    title: el('pr-title').textContent,
+    addr: el('pr-addr').textContent,
+    openHref: el('pr-open').getAttribute('href'),
+  };
+};
+
+const good = runRedirect(
+  '?address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM&amount=4500000000&text=TV-TEST1-audit'
+);
+ok(good.sum === '4.5 GRAM', 'Сумма показана в понятных единицах: ' + good.sum);
+ok(
+  good.openHref && good.openHref.startsWith('ton://transfer?'),
+  'Кнопка ведёт на ton://transfer'
+);
+ok(
+  good.openHref.includes('address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM'),
+  'Адрес получателя передан в кошелёк'
+);
+ok(good.openHref.includes('amount=4500000000'), 'Сумма в нанотонах');
+ok(good.openHref.includes('text=TV-TEST1-audit'), 'Комментарий заказа передан');
+ok(good.addr === 'UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM', 'Адрес показан для ручного перевода');
+
+// Битый адрес — не переходим
+const badAddr = runRedirect('?address=javascript:alert(1)&amount=4500000000');
+ok(
+  badAddr.title.includes('Не удалось'),
+  'Некорректный адрес отклоняется: ' + badAddr.title
+);
+const rawAddr = runRedirect('?address=0:1dad6272b5e35b48f9fd3475a338ab2c1d678bf596c014572521ff0452db0c71&amount=1');
+ok(rawAddr.title.includes('Не удалось'), 'Raw-адрес 0:… отклоняется — кошельки ждут EQ/UQ');
+
+// Битая сумма
+ok(runRedirect('?address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM&amount=abc').title.includes('Не удалось'), 'Сумма не число → отказ');
+ok(runRedirect('?address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM&amount=-500').title.includes('Не удалось'), 'Отрицательная сумма → отказ');
+ok(runRedirect('?address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM&amount=1.5').title.includes('Не удалось'), 'Дробная сумма → отказ');
+ok(runRedirect('?address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM&amount=').title.includes('Не удалось'), 'Пустая сумма → отказ');
+ok(runRedirect('').title.includes('Не удалось'), 'Совсем пустая ссылка → понятный отказ, без исключения');
+
+// Инъекция в комментарий не должна ломать ссылку
+const injected = runRedirect(
+  '?address=UQAdrWJyteNbSPn9NHWjOKssHWeL9ZbAFFclIf8EUtsMcXJM&amount=1000000000&text=' +
+    encodeURIComponent('"><script>alert(1)</script>')
+);
+ok(
+  !/<script>/.test(injected.openHref || ''),
+  'Комментарий с HTML не попадает в ссылку как разметка'
+);
+ok(
+  injected.openHref && injected.openHref.startsWith('ton://transfer?'),
+  'Даже с вредным комментарием ссылка остаётся ton://transfer'
+);
 
 console.log('\n' + '='.repeat(46));
 console.log(`  Пройдено: ${pass}   Провалено: ${fail}`);

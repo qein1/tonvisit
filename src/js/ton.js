@@ -76,13 +76,26 @@ export function formatNano(nano) {
 /**
  * Deep-link для кошелька. Поддерживается Tonkeeper, Telegram Wallet,
  * Tonhub, MyTonWallet и другими.
+ *
+ * Порядок параметров важен: address идёт ПЕРВЫМ. Раньше ссылка собиралась
+ * как ?text=…&amount=…&address=…, и Tonkeeper при сканировании QR
+ * показывал «Неверная ссылка» — адрес он брал из конца и не находил.
+ * Первым параметром адрес разбирается всеми кошельками без исключений.
+ *
+ * amount — обязательно в нанотонах (строкой). Tonkeeper ждёт именно
+ * целое число; «4.5» он не понимает и трактует как 4.5 нанотона.
+ *
+ * exp — время жизни ссылки в UNIX-секундах. Через 24 часа ссылка
+ * протухает: это защита от ситуации, когда клиент открыл старый QR
+ * через месяц и отправил деньги по неактуальной цене.
  */
-export function buildPaymentLink({ wallet, ton, comment }) {
+export function buildPaymentLink({ wallet, ton, comment, ttlSeconds = 86400 }) {
   const params = new URLSearchParams({
-    text: comment,
-    amount: toNano(ton).toString(),
     address: wallet,
+    amount: toNano(ton).toString(),
   });
+  if (comment) params.set('text', comment);
+  params.set('exp', String(Math.floor(Date.now() / 1000) + ttlSeconds));
   return `ton://transfer?${params.toString()}`;
 }
 

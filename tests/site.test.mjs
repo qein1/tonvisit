@@ -41,10 +41,21 @@ if (!window.crypto || !window.crypto.getRandomValues) {
 // ton.js исполняется в контексте Node, а main.js — в контексте окна,
 // поэтому мок fetch ставим в оба места.
 let fetchCalls = [];
-let fetchHandler = async () => ({
-  ok: true, status: 200,
-  json: async () => ({ balance: '12345000000', last_activity: Math.floor(Date.now() / 1000) }),
-});
+let fetchHandler = async (url) => {
+  // Курс: реальный формат tonapi.io (rates.GRAM.prices.USD).
+  // Старая схема base=ton&symbols=usd больше не отвечает — из-за этого
+  // сайт молча показывал фолбэк и завышенные цены.
+  if (String(url).includes('/rates')) {
+    return {
+      ok: true, status: 200,
+      json: async () => ({ rates: { GRAM: { prices: { USD: 1.5748 }, diff_24h: { USD: '+8.00%' } } } }),
+    };
+  }
+  return {
+    ok: true, status: 200,
+    json: async () => ({ balance: '12345000000', last_activity: Math.floor(Date.now() / 1000) }),
+  };
+};
 globalThis.fetch = (url, opts) => { fetchCalls.push(String(url)); return fetchHandler(url, opts); };
 window.fetch = (url, opts) => { fetchCalls.push(String(url)); return fetchHandler(url, opts); };
 
@@ -219,9 +230,61 @@ console.log('\n[4] Deep-link оплаты');
 const href = $('#pay-open-wallet').getAttribute('href');
 ok(href.startsWith('ton://transfer?'), 'Ссылка ведёт на ton://transfer');
 const params = new URLSearchParams(href.split('?')[1]);
-ok(params.get('amount') === '4500000000', 'Сумма в нанотонах (4.5 TON = 4500000000)');
+ok(params.get('amount') === '4500000000', 'Сумма в нанотонах (4.5 GRAM = 4500000000)');
 ok(params.get('address') === cfgMod.CONFIG.payment.wallet, 'Адрес получателя в ссылке');
 ok(params.get('text') === orderId + '-audit', 'Комментарий в ссылке');
+// Регресс: Tonkeeper показывал «Неверная ссылка», когда address шёл не первым
+ok(
+  [...params.keys()][0] === 'address',
+  'address — первый параметр ссылки (иначе кошелёк не находит получателя)'
+);
+ok(
+  /^\d+$/.test(params.get('amount')),
+  'amount — целое число нанотонов, без дробной части'
+);
+const exp = Number(params.get('exp'));
+ok(
+  Number.isFinite(exp) && exp > Math.floor(Date.now() / 1000),
+  'Ссылка имеет срок действия (exp в будущем)'
+);
+ok(
+  exp - Math.floor(Date.now() / 1000) <= 86400,
+  'Срок действия ссылки — не больше суток'
+);
+
+console.log('\n[4b] Курс GRAM → USD с tonapi.io');
+ok(
+  cfgMod.CONFIG.payment.currency === 'GRAM',
+  'Валюта в конфиге — GRAM (нативная монета сети TON)'
+);
+const rateCall = fetchCalls.find((u) => u.includes('/rates'));
+ok(!!rateCall, 'Курс запрашивается у tonapi.io');
+ok(
+  rateCall && rateCall.includes('tokens=') && rateCall.includes('currencies='),
+  'Запрос курса использует новую схему tokens/currencies: ' + rateCall
+);
+ok(
+  !(rateCall && rateCall.includes('base=') && rateCall.includes('symbols=')),
+  'Старая схема base/symbols больше не используется — она отдаёт ошибку'
+);
+// Живой ответ API: prices.USD внутри rates.GRAM
+const ratesPayload = {
+  rates: { GRAM: { prices: { USD: 1.5748425157484252 }, diff_24h: { USD: '+8.00%' } } },
+};
+ok(
+  Number(ratesPayload.rates.GRAM.prices.USD) > 0,
+  'Формат ответа API: rates.GRAM.prices.USD'
+);
+ok(
+  cfgMod.CONFIG.services.every((s) => typeof s.priceTon === 'number' && s.priceTon > 0),
+  'У всех услуг задана положительная цена в GRAM'
+);
+// Цена в долларах на сайте должна считаться по живому курсу, а не по фолбэку
+const rateNow = ratesPayload.rates.GRAM.prices.USD;
+ok(
+  Math.abs(rateNow - 3.0) > 0.1,
+  'Реальный курс отличается от старого фолбэка 3.0 (именно он завышал цены)'
+);
 
 console.log('\n[5] Копирование адреса');
 let copied = null;
@@ -282,7 +345,14 @@ console.log('\n[9] Баланс кошелька в hero');
 $('#pay-modal').classList.remove('modal--open');
 fetchHandler = async () => ({ ok: true, status: 200, json: async () => ({ balance: '12345000000', last_activity: Math.floor(Date.now() / 1000) }) });
 await wait(250);
-ok($('#wallet-balance').textContent.includes('TON'), 'Баланс отображён: ' + $('#wallet-balance').textContent);
+ok(
+  $('#wallet-balance').textContent.includes('GRAM'),
+  'Баланс отображён в GRAM: ' + $('#wallet-balance').textContent
+);
+ok(
+  !$('#wallet-balance').textContent.includes('TON'),
+  'Баланс больше не подписан как TON'
+);
 
 console.log('\n[10] Мобильное меню, FAQ, безопасность');
 $('#burger').click();

@@ -59,15 +59,29 @@ function esc(str) {
  *  Рендер секций
  * ------------------------------------------------------------------ */
 
-/** Приблизительный курс TON → USD для показа рядом с ценой в TON. */
-const FALLBACK_TON_USD = 3.0;
-let tonUsdRate = FALLBACK_TON_USD;
+/**
+ * Курс GRAM → USD для показа рядом с ценой в крипте.
+ *
+ * Фолбэк — курс на момент разработки. Он нужен только на пару секунд,
+ * пока живый запрос ещё в полёте, и если сеть недоступна: страница
+ * всё равно рендерится мгновенно и не показывает «$0» или «NaN».
+ */
+const FALLBACK_USD_RATE = 1.57;
+let usdRate = FALLBACK_USD_RATE;
 
-function usdLabel(usd) {
+/**
+ * Форматирует сумму в долларах.
+ *
+ * decimals по умолчанию 0 — для цен услуг («$1350» кругло и читаемо).
+ * Для баланса кошелька нужны копейки, иначе баланс 1.5 GRAM превращался
+ * в «$2» и вводил в заблуждение.
+ */
+function usdLabel(usd, decimals = 0) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(usd);
 }
 
@@ -142,10 +156,10 @@ function renderServices() {
         <div class="price">
           <div class="price__row">
             <span class="price__ton">${s.priceTon}</span>
-            <span class="price__currency">TON</span>
+            <span class="price__currency">${esc(CONFIG.payment.currency)}</span>
             ${s.oldPriceUsd ? `<span class="price__usd">${usdLabel(s.oldPriceUsd)}</span>` : ''}
           </div>
-          <div class="price__approx">≈ ${usdLabel(Math.round(s.priceTon * tonUsdRate))}</div>
+          <div class="price__approx">≈ ${usdLabel(Math.round(s.priceTon * usdRate))}</div>
           <div class="price__unit">${esc(s.unit)}</div>
         </div>
 
@@ -155,7 +169,7 @@ function renderServices() {
 
         <button class="btn ${s.popular ? 'btn--primary' : 'btn--ghost'} btn--block"
                 data-pay="${esc(s.id)}">
-          Оплатить ${s.priceTon} TON
+          Оплатить ${s.priceTon} ${esc(CONFIG.payment.currency)}
         </button>
       </article>`
     )
@@ -335,8 +349,8 @@ function openPayModal(serviceId) {
 
   $('#pay-title').textContent = service.title;
   $('#pay-subtitle').textContent = service.tagline;
-  $('#pay-amount').innerHTML = `${service.priceTon}<span>TON</span>`;
-  $('#pay-usd').textContent = `≈ ${usdLabel(Math.round(service.priceTon * tonUsdRate))}`;
+  $('#pay-amount').innerHTML = `${service.priceTon}<span>${esc(CONFIG.payment.currency)}</span>`;
+  $('#pay-usd').textContent = `≈ ${usdLabel(Math.round(service.priceTon * usdRate))}`;
   $('#pay-order-id').textContent = order.id;
   $('#pay-comment').textContent = order.comment;
   $('#pay-wallet').textContent = CONFIG.payment.wallet;
@@ -447,31 +461,47 @@ async function loadWalletBalance() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
-    const ton = Number(data.balance || 0) / 1e9;
-    balanceEl.textContent = `${ton.toLocaleString('ru-RU', {
+    const gram = Number(data.balance || 0) / 1e9;
+    balanceEl.textContent = `${gram.toLocaleString('ru-RU', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 4,
-    })} TON`;
-    usdEl.textContent = `≈ ${usdLabel(Math.round(ton * tonUsdRate))} · обновлено ${new Date(
+    })} GRAM`;
+    usdEl.textContent = `≈ ${usdLabel(gram * usdRate, 2)} · обновлено ${new Date(
       data.last_activity ? new Date(data.last_activity * 1000) : new Date()
     ).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
   } catch {
     // Не страшно: сайт работает и без баланса
-    balanceEl.textContent = 'TON Mainnet';
+    balanceEl.textContent = 'Сеть TON Mainnet';
     usdEl.textContent = 'Баланс временно недоступен';
   }
 }
 
-/** Подтягиваем курс TON, чтобы показать «≈ $» рядом с ценой в крипте. */
+/**
+ * Подтягиваем курс GRAM → USD, чтобы показать «≈ $» рядом с ценой в крипте.
+ *
+ * ВАЖНО про формат ответа: API поменял схему параметров и вложенность.
+ * Старый вызов base=ton&symbols=usd теперь отдаёт 500 с текстом
+ * «query parameter "tokens" not set», поэтому он молча уводил нас
+ * на FALLBACK_USD_RATE и сайт показывал завышенные цены.
+ *
+ * Сейчас: GET /v2/rates?tokens=gram&currencies=usd
+ *   → { rates: { GRAM: { prices: { USD: 1.57 }, diff_24h: {...} } } }
+ *
+ * Ключ в ответе — GRAM (нативная монета сети TON), но TON тоже принимаем:
+ * так сайт переживёт очередное переименование тикера.
+ */
 async function loadTonRate() {
   try {
-    const res = await fetch('https://tonapi.io/v2/rates?base=ton&symbols=usd');
-    if (!res.ok) throw new Error('rate');
+    const res = await fetch('https://tonapi.io/v2/rates?tokens=gram&currencies=usd');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const rate = Number(data?.rates?.TON?.USD ?? data?.rates?.ton?.usd);
-    if (rate > 0) tonUsdRate = rate;
+    const rates = data?.rates || {};
+    // Берём цену из prices.USD; перебираем тикеры на случай переименования
+    const entry = rates.GRAM || rates.TON || Object.values(rates)[0];
+    const rate = Number(entry?.prices?.USD ?? entry?.USD ?? entry?.usd);
+    if (Number.isFinite(rate) && rate > 0) usdRate = rate;
   } catch {
-    // остаётся FALLBACK_TON_USD
+    // Остаёмся на FALLBACK_USD_RATE — сайт при этом работает
   }
 }
 
